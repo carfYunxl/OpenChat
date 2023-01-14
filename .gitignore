@@ -30,3 +30,8 @@
 *.exe
 *.out
 *.app
+
+/winSockClient/xads_PCClient/Debug
+/winSockClient/xads_PCClient/Release
+
+/winSockServer/bin
