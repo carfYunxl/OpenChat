@@ -4,7 +4,7 @@
 
 BOOL socket_Select(SOCKET hSocket,DWORD nTimeOut,BOOL bRead);
 UINT ListenThreadFunc(LPVOID Lparam);
-DWORD WINAPI ClientThreadProc(LPVOID Lparam);
+UINT ClientThreadProc(LPVOID Lparam);
 CString GetTime();
 
 class Cxads_PCServerDlg : public CDialogEx

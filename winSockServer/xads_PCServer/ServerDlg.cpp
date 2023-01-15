@@ -216,28 +216,15 @@ UINT ListenThreadFunc(LPVOID Lparam)
 			tItem.cIp = inet_ntoa(clientAddr.sin_addr); //IP地址
 			tItem.m_pMainWnd = pServer;
 			int idx = pServer->m_ClientArray.Add(tItem); //idx是第x个连接的客户端
-			//AfxBeginThread(ClientThreadProc,NULL);
-			tItem.m_hThread = CreateThread
-			(
-				NULL,
-				0,
-				ClientThreadProc,
-				&(pServer->m_ClientArray.GetAt(idx)),
-				CREATE_SUSPENDED,
-				NULL
-			); 
-			pServer->m_ClientArray.GetAt(idx).m_hThread = tItem.m_hThread; 
-			//等把hThread加入了节点，才开始执行线程，如下
-			ResumeThread(tItem.m_hThread);
+			AfxBeginThread(ClientThreadProc, &pServer->m_ClientArray.GetAt(idx));
 			pServer->SetRevBoxText(tItem.cIp + _T("上线"));
 			Sleep(100);
 		}
 	}
-	AfxMessageBox(_T("Closed!"));
 }
 
 #define MAX_BUFF 256
-DWORD WINAPI ClientThreadProc(LPVOID Lparam)
+UINT ClientThreadProc(LPVOID Lparam)
 { 
 	//利用异步IO模型循环读取socket内的信息，并发送给各个用户
 	USES_CONVERSION;
@@ -323,7 +310,6 @@ void Cxads_PCServerDlg::RemoveClientFromArray(CClientItem in_item)
 	for (int idx = 0 ; idx < m_ClientArray.GetCount() ; idx++)
 	{
 		if (in_item.cSocket == m_ClientArray[idx].cSocket &&
-			in_item.m_hThread == m_ClientArray[idx].m_hThread &&
 			in_item.cIp == m_ClientArray[idx].cIp &&
 			in_item.m_pMainWnd == m_ClientArray[idx].m_pMainWnd)
 		{
@@ -369,7 +355,7 @@ void Cxads_PCServerDlg::SendClientMsg(CString strMsg,CClientItem * pWhoseItem)
 
 BOOL Cxads_PCServerDlg::equal(const CClientItem * p1 , const CClientItem * p2)
 {
-	if (p1->cSocket == p2->cSocket && p1->m_hThread == p2->m_hThread && p1->cIp == p2->cIp)
+	if (p1->cSocket == p2->cSocket && p1->cIp == p2->cIp)
 	{
 		return TRUE;
 	} 
