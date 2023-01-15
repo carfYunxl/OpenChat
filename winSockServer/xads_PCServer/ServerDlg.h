@@ -3,7 +3,7 @@
 #include "ClientItem.h"
 
 BOOL socket_Select(SOCKET hSocket,DWORD nTimeOut,BOOL bRead);
-DWORD WINAPI ListenThreadFunc(LPVOID Lparam);
+UINT ListenThreadFunc(LPVOID Lparam);
 DWORD WINAPI ClientThreadProc(LPVOID Lparam);
 CString GetTime();
 
@@ -11,6 +11,7 @@ class Cxads_PCServerDlg : public CDialogEx
 {
 public:
 	Cxads_PCServerDlg(CWnd* pParent = NULL);
+	~Cxads_PCServerDlg();
 	enum { IDD = IDD_XADS_PCSERVER_DIALOG };
 
 protected:
@@ -45,13 +46,11 @@ public:
 
 	SOCKET	m_SockListen;
 	UINT	m_ServicePort;
-	HANDLE	m_hListenThread;
-	CArray<CClientItem> m_ClientArray;
 	CEdit	m_EditRevBox;
+	BOOL	m_isServerOpen;
 
+	CArray<CClientItem> m_ClientArray;
 private:
 	BOOL equal(const CClientItem *p1 , const CClientItem * p2);
 	LRESULT OnTrayCallbackMsg(WPARAM wparam , LPARAM lparam);
-
-	BOOL m_isServerOpen;
 };

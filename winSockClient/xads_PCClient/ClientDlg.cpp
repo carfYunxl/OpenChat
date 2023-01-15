@@ -83,7 +83,7 @@ BOOL Cxads_PCClientDlg::OnInitDialog()
 
 	// TODO: 在此添加额外的初始化代码
 	SetDlgItemText(IDC_IPADDRESS,_T("127.0.0.1"));
-	SetDlgItemText(IDC_EDITPORT,_T("8260"));
+	SetDlgItemText(IDC_EDITPORT,_T("8888"));
 	::HideCaret(GetDlgItem(IDC_EDITREVBOX)->GetSafeHwnd());
 
 	return TRUE;

@@ -17,11 +17,11 @@ public:
 		m_hThread(NULL),
 		m_pMainWnd(NULL)
 	{}
-	CString cIp;				//客户端的IP
-	SOCKET	cSocket;			//客户端的Socket
-	//CString cName;				//客户端的名字
-	HANDLE m_hThread;
-	Cxads_PCServerDlg *m_pMainWnd;
+	CString cIp;						//客户端的IP
+	SOCKET	cSocket;					//客户端的Socket
+	//CString cName;					//客户端的名字
+	HANDLE m_hThread;					//每次有一个客户端连接成功，创建的那个线程句柄
+	Cxads_PCServerDlg *m_pMainWnd;		//this server dlg 
 };
 
 

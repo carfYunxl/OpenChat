@@ -36,11 +36,15 @@ END_MESSAGE_MAP()
 Cxads_PCServerDlg::Cxads_PCServerDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(Cxads_PCServerDlg::IDD, pParent)
 	, m_isServerOpen(FALSE)
-	, m_hListenThread(NULL)
 	, m_SockListen(NULL)
 	, m_ServicePort(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+}
+
+Cxads_PCServerDlg::~Cxads_PCServerDlg()
+{
+	
 }
 
 void Cxads_PCServerDlg::DoDataExchange(CDataExchange* pDX)
@@ -162,16 +166,12 @@ void Cxads_PCServerDlg::OnBnClickedButtonstart()
 
 BOOL Cxads_PCServerDlg::StartServer(void)
 {
-	m_hListenThread = CreateThread(NULL,0,ListenThreadFunc,this,0,0);
-	if (m_hListenThread == NULL)
-	{
-		return FALSE;
-	}else{
-		return TRUE;
-	}
+	//创建线程
+	AfxBeginThread(ListenThreadFunc,this);
+	return TRUE;
 }
 
-DWORD WINAPI ListenThreadFunc(LPVOID Lparam)
+UINT ListenThreadFunc(LPVOID Lparam)
 {
 	Cxads_PCServerDlg * pServer = (Cxads_PCServerDlg *)Lparam;;
 	if (INVALID_SOCKET == (pServer->m_SockListen = socket(AF_INET,SOCK_STREAM,IPPROTO_TCP)))
@@ -199,7 +199,7 @@ DWORD WINAPI ListenThreadFunc(LPVOID Lparam)
 	pServer->EnableWindow(IDC_BUTTONSTART,FALSE);
 	pServer->SetRevBoxText(_T("服务启动成功,开始监听端口"));
 	//进入循环，监听端口
-	while (TRUE)
+	while (pServer->m_isServerOpen)
 	{
 		if (socket_Select(pServer->m_SockListen,100,TRUE))
 		{
@@ -216,6 +216,7 @@ DWORD WINAPI ListenThreadFunc(LPVOID Lparam)
 			tItem.cIp = inet_ntoa(clientAddr.sin_addr); //IP地址
 			tItem.m_pMainWnd = pServer;
 			int idx = pServer->m_ClientArray.Add(tItem); //idx是第x个连接的客户端
+			//AfxBeginThread(ClientThreadProc,NULL);
 			tItem.m_hThread = CreateThread
 			(
 				NULL,
@@ -232,10 +233,13 @@ DWORD WINAPI ListenThreadFunc(LPVOID Lparam)
 			Sleep(100);
 		}
 	}
+	AfxMessageBox(_T("Closed!"));
 }
 
 #define MAX_BUFF 256
-DWORD WINAPI ClientThreadProc(LPVOID Lparam){ //利用异步IO模型循环读取socket内的信息，并发送给各个用户
+DWORD WINAPI ClientThreadProc(LPVOID Lparam)
+{ 
+	//利用异步IO模型循环读取socket内的信息，并发送给各个用户
 	USES_CONVERSION;
 	CString strMsg;
 	CClientItem ClientItem = *(CClientItem *)Lparam;
@@ -314,7 +318,8 @@ void Cxads_PCServerDlg::SetRevBoxText(CString strMsg){
 }
 
 //客户端下线，从链表移除该节点
-void Cxads_PCServerDlg::RemoveClientFromArray(CClientItem in_item){
+void Cxads_PCServerDlg::RemoveClientFromArray(CClientItem in_item)
+{
 	for (int idx = 0 ; idx < m_ClientArray.GetCount() ; idx++)
 	{
 		if (in_item.cSocket == m_ClientArray[idx].cSocket &&
@@ -386,14 +391,11 @@ void Cxads_PCServerDlg::OnBnClickedButtonsend()
 }
 
 
+/**
+* 如果输入框有内容，就enable发送按钮
+*/
 void Cxads_PCServerDlg::OnEnChangeEditsendbox()
 {
-	// TODO:  如果该控件是 RICHEDIT 控件，它将不
-	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
-	// 函数并调用 CRichEditCtrl().SetEventMask()，
-	// 同时将 ENM_CHANGE 标志“或”运算到掩码中。
-
-	// TODO:  在此添加控件通知处理程序代码
 	CString strMsg;
 	GetDlgItemText(IDC_EDITSENDBOX,strMsg);
 	if (strMsg == _T("") || !m_isServerOpen)
