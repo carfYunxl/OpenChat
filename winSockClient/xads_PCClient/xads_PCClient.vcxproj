@@ -15,7 +15,9 @@
     <RootNamespace>xads_PCClient</RootNamespace>
     <Keyword>MFCProj</Keyword>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+
     <ProjectName>Client</ProjectName>
+
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -111,16 +113,20 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+
     <ClInclude Include="Client.h" />
     <ClInclude Include="ClientDlg.h" />
+
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="ClientDlg.cpp" />
+
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="xads_PCClient.rc" />

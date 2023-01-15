@@ -30,10 +30,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+
     <ClInclude Include="Server.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="ServerDlg.h">
+
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
@@ -45,15 +47,19 @@
     <ClInclude Include="Resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
+
     <ClInclude Include="ClientItem.h">
+
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+
     <ClCompile Include="Server.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="ServerDlg.cpp">
+
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">

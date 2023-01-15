@@ -34,4 +34,9 @@
 /winSockClient/xads_PCClient/Debug
 /winSockClient/xads_PCClient/Release
 
+<<<<<<< HEAD
 /winSockServer/bin
+/winSockServer/.vs
+=======
+/winSockServer/bin
+>>>>>>> 011e42736fd48b93e9b2e4fbfb78089e6e35b0a0
