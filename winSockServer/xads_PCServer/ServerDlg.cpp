@@ -212,22 +212,23 @@ DWORD WINAPI ListenThreadFunc(LPVOID Lparam)
 			}
 			//将节点加入链中
 			CClientItem tItem;
-			tItem.m_ClientSocket = accSock;
-			tItem.m_strIp = inet_ntoa(clientAddr.sin_addr); //IP地址
+			tItem.cSocket = accSock;
+			tItem.cIp = inet_ntoa(clientAddr.sin_addr); //IP地址
 			tItem.m_pMainWnd = pServer;
 			int idx = pServer->m_ClientArray.Add(tItem); //idx是第x个连接的客户端
 			tItem.m_hThread = CreateThread
 			(
 				NULL,
 				0,
-				ClientThreadProc, //创建一个线程并挂起:CREATE_SUSPENDED
+				ClientThreadProc,
 				&(pServer->m_ClientArray.GetAt(idx)),
-				CREATE_SUSPENDED,NULL
+				CREATE_SUSPENDED,
+				NULL
 			); 
 			pServer->m_ClientArray.GetAt(idx).m_hThread = tItem.m_hThread; 
 			//等把hThread加入了节点，才开始执行线程，如下
 			ResumeThread(tItem.m_hThread);
-			pServer->SetRevBoxText(tItem.m_strIp + _T("上线"));
+			pServer->SetRevBoxText(tItem.cIp + _T("上线"));
 			Sleep(100);
 		}
 	}
@@ -240,18 +241,18 @@ DWORD WINAPI ClientThreadProc(LPVOID Lparam){ //利用异步IO模型循环读取socket内的
 	CClientItem ClientItem = *(CClientItem *)Lparam;
 	while (TRUE)
 	{
-		if (socket_Select(ClientItem.m_ClientSocket,100,TRUE))
+		if (socket_Select(ClientItem.cSocket,100,TRUE))
 		{
 			char szRev[MAX_BUFF] = {0};
-			int iRet = recv(ClientItem.m_ClientSocket,szRev,sizeof(szRev),0);
+			int iRet = recv(ClientItem.cSocket,szRev,sizeof(szRev),0);
 			if (iRet > 0)
 			{
 				strMsg = A2T(szRev); //中文出现乱码，英文正常
 //				strMsg.Format(_T("%s"),szRev); //这么写连英文都不对了
-				ClientItem.m_pMainWnd->SetRevBoxText(ClientItem.m_strIp + _T(">>") + strMsg);
+				ClientItem.m_pMainWnd->SetRevBoxText(ClientItem.cIp + _T(">>") + strMsg);
 				ClientItem.m_pMainWnd->SendClientMsg(strMsg,&ClientItem);
 			}else{
-				strMsg = ClientItem.m_strIp + _T(" 已离开");
+				strMsg = ClientItem.cIp + _T(" 已离开");
 				ClientItem.m_pMainWnd->RemoveClientFromArray(ClientItem);
 				ClientItem.m_pMainWnd->SetRevBoxText(strMsg);
 				break;
@@ -295,7 +296,7 @@ void Cxads_PCServerDlg::OnBnClickedButtonend()
 	int AllClient = m_ClientArray.GetCount();
 	for (int idx = 0 ; idx < AllClient ; idx++)
 	{
-		closesocket(m_ClientArray.GetAt(idx).m_ClientSocket);
+		closesocket(m_ClientArray.GetAt(idx).cSocket);
 	}
 	m_ClientArray.RemoveAll();
 	closesocket(m_SockListen);
@@ -316,9 +317,9 @@ void Cxads_PCServerDlg::SetRevBoxText(CString strMsg){
 void Cxads_PCServerDlg::RemoveClientFromArray(CClientItem in_item){
 	for (int idx = 0 ; idx < m_ClientArray.GetCount() ; idx++)
 	{
-		if (in_item.m_ClientSocket == m_ClientArray[idx].m_ClientSocket &&
+		if (in_item.cSocket == m_ClientArray[idx].cSocket &&
 			in_item.m_hThread == m_ClientArray[idx].m_hThread &&
-			in_item.m_strIp == m_ClientArray[idx].m_strIp &&
+			in_item.cIp == m_ClientArray[idx].cIp &&
 			in_item.m_pMainWnd == m_ClientArray[idx].m_pMainWnd)
 		{
 			m_ClientArray.RemoveAt(idx);
@@ -356,14 +357,14 @@ void Cxads_PCServerDlg::SendClientMsg(CString strMsg,CClientItem * pWhoseItem)
 	{
 		if (!pWhoseItem || !equal(pWhoseItem,&(m_ClientArray.GetAt(i))))
 		{
-			send(m_ClientArray.GetAt(i).m_ClientSocket,szBuf,256,0);
+			send(m_ClientArray.GetAt(i).cSocket,szBuf,256,0);
 		}
 	}
 }
 
 BOOL Cxads_PCServerDlg::equal(const CClientItem * p1 , const CClientItem * p2)
 {
-	if (p1->m_ClientSocket == p2->m_ClientSocket && p1->m_hThread == p2->m_hThread && p1->m_strIp == p2->m_strIp)
+	if (p1->cSocket == p2->cSocket && p1->m_hThread == p2->m_hThread && p1->cIp == p2->cIp)
 	{
 		return TRUE;
 	} 
