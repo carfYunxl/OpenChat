@@ -177,6 +177,10 @@ BOOL Cxads_PCClientDlg::ConnectSocket(Cxads_PCClientDlg * pClient)
 		return FALSE;
 	}
 
+	CString strCliTitle;
+	strCliTitle.Format(_T("Client : %d"),dPort);
+	SetWindowTextW(strCliTitle);
+
 	pClient->SetRevBoxText(_T("连接服务器成功"));
 	pClient->EnableWindow(IDC_BUTTONSTOP,TRUE);
 	pClient->EnableWindow(IDC_BUTTONCONNECT,FALSE);

@@ -161,6 +161,10 @@ void Cxads_PCServerDlg::OnBnClickedButtonstart()
 	StartServer();
 	m_isServerOpen = TRUE;
 	OnEnChangeEditsendbox();
+
+	CString strServerTitle;
+	strServerTitle.Format(_T("Server : %d"),m_ServicePort);
+	SetWindowText(strServerTitle);
 }
 
 
@@ -211,13 +215,17 @@ UINT ListenThreadFunc(LPVOID Lparam)
 				continue;
 			}
 			//将节点加入链中
-			CClientItem tItem;
-			tItem.cSocket = accSock;
-			tItem.cIp = inet_ntoa(clientAddr.sin_addr); //IP地址
-			tItem.m_pMainWnd = pServer;
-			int idx = pServer->m_ClientArray.Add(tItem); //idx是第x个连接的客户端
+			CClientItem cItem;
+			cItem.cSocket = accSock;						//客户端的Socket，用于与客户端通信
+			cItem.cIp = inet_ntoa(clientAddr.sin_addr);		//IP地址
+			cItem.cPort = ntohs(clientAddr.sin_port);		//端口
+			cItem.m_pMainWnd = pServer;						//Server指针
+			int idx = pServer->m_ClientArray.Add(cItem);	//idx是第x个连接的客户端
 			AfxBeginThread(ClientThreadProc, &pServer->m_ClientArray.GetAt(idx));
-			pServer->SetRevBoxText(tItem.cIp + _T("上线"));
+
+			CString strCliPort;
+			strCliPort.Format(_T(":%d"),cItem.cPort);
+			pServer->SetRevBoxText(_T("[") + cItem.cIp + strCliPort + _T("] 上线"));
 			Sleep(100);
 		}
 	}
@@ -365,10 +373,8 @@ BOOL Cxads_PCServerDlg::equal(const CClientItem * p1 , const CClientItem * p2)
 	}
 }
 
-//点击发送按钮
 void Cxads_PCServerDlg::OnBnClickedButtonsend()
 {
-	// TODO: 在此添加控件通知处理程序代码
 	CString strMsg;
 	GetDlgItemText(IDC_EDITSENDBOX,strMsg);
 	SendClientMsg(strMsg,NULL);
