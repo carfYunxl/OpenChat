@@ -177,8 +177,16 @@ BOOL Cxads_PCClientDlg::ConnectSocket(Cxads_PCClientDlg * pClient)
 		return FALSE;
 	}
 
+	//获取客户端端口
+	sockaddr_in cliAddr;
+	int len = sizeof(cliAddr);
+	if (getsockname(m_ClientSock, (sockaddr*)&cliAddr, &len) != 0)
+	{
+		MessageBox(_T("获取客户端端口失败！"));
+	}
+
 	CString strCliTitle;
-	strCliTitle.Format(_T("Client : %d"),dPort);
+	strCliTitle.Format(_T("Client : %d"), ntohs(cliAddr.sin_port));
 	SetWindowTextW(strCliTitle);
 
 	pClient->SetRevBoxText(_T("连接服务器成功"));
