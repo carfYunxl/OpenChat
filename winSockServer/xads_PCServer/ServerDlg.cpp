@@ -247,7 +247,6 @@ UINT ClientThreadProc(LPVOID Lparam)
 			if (iRet > 0)
 			{
 				strMsg = A2T(szRev); //中文出现乱码，英文正常
-//				strMsg.Format(_T("%s"),szRev); //这么写连英文都不对了
 				ClientItem.m_pMainWnd->SetRevBoxText(ClientItem.cIp + _T(">>") + strMsg);
 				ClientItem.m_pMainWnd->SendClientMsg(strMsg,&ClientItem);
 			}else{
@@ -317,9 +316,8 @@ void Cxads_PCServerDlg::RemoveClientFromArray(CClientItem in_item)
 {
 	for (int idx = 0 ; idx < m_ClientArray.GetCount() ; idx++)
 	{
-		if (in_item.cSocket == m_ClientArray[idx].cSocket &&
-			in_item.cIp == m_ClientArray[idx].cIp &&
-			in_item.m_pMainWnd == m_ClientArray[idx].m_pMainWnd)
+		//根据端口和ip地址，就可以唯一确定一个进程
+		if (in_item.cPort == m_ClientArray[idx].cPort && in_item.cIp == m_ClientArray[idx].cIp)
 		{
 			m_ClientArray.RemoveAt(idx);
 		}
@@ -327,7 +325,8 @@ void Cxads_PCServerDlg::RemoveClientFromArray(CClientItem in_item)
 	return;
 }
 
-CString GetTime(){
+CString GetTime()
+{
 	SYSTEMTIME time;
 	CString strTime;
 	GetLocalTime(&time);
@@ -344,7 +343,6 @@ void Cxads_PCServerDlg::OnBnClickedButtonquit()
 		OnBnClickedButtonend();
 	}
 	SendMessage(WM_CLOSE);
-	// TODO: 在此添加控件通知处理程序代码
 }
 
 void Cxads_PCServerDlg::SendClientMsg(CString strMsg,CClientItem * pWhoseItem)
@@ -375,10 +373,14 @@ BOOL Cxads_PCServerDlg::equal(const CClientItem * p1 , const CClientItem * p2)
 
 void Cxads_PCServerDlg::OnBnClickedButtonsend()
 {
+	CString strSerPort;
+	strSerPort.Format(_T("[Server : %d]:\n"), m_ServicePort);
+
 	CString strMsg;
 	GetDlgItemText(IDC_EDITSENDBOX,strMsg);
-	SendClientMsg(strMsg,NULL);
-	SetRevBoxText(_T("服务器>>") + strMsg);
+	SendClientMsg(strSerPort + strMsg,NULL);
+
+	SetRevBoxText(strSerPort + strMsg);
 	SetDlgItemText(IDC_EDITSENDBOX,_T(""));
 }
 
