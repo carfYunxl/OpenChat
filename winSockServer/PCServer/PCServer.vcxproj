@@ -15,9 +15,7 @@
     <RootNamespace>PCServer</RootNamespace>
     <Keyword>MFCProj</Keyword>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-
     <ProjectName>Server</ProjectName>
-
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -104,31 +102,28 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="ReadMe.txt" />
     <None Include="res\bitmap1.bmp" />
     <None Include="res\bitmapon.bmp" />
     <None Include="res\PCServer.ico" />
     <None Include="res\PCServer.rc2" />
   </ItemGroup>
   <ItemGroup>
-
     <ClInclude Include="ClientItem.h" />
+    <ClInclude Include="include\TcpServer.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="ServerDlg.h" />
-
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\TcpServer.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="ServerDlg.cpp" />
-
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PCServer.rc" />

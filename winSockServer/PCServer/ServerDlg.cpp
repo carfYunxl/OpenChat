@@ -205,7 +205,9 @@ UINT ListenThreadFunc(LPVOID Lparam)
 	//进入循环，监听端口
 	while (pServer->m_isServerOpen)
 	{
-		if (socket_Select(pServer->m_SockListen,100,TRUE))
+		if (socket_Select
+		
+		(pServer->m_SockListen,100,TRUE))
 		{
 			sockaddr_in clientAddr;
 			int iLen = sizeof(sockaddr_in);

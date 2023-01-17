@@ -15,7 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ReadMe.txt" />
     <None Include="res\PCServer.rc2">
       <Filter>资源文件</Filter>
     </None>
@@ -30,12 +29,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-
     <ClInclude Include="Server.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="ServerDlg.h">
-
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
@@ -47,22 +44,24 @@
     <ClInclude Include="Resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
-
     <ClInclude Include="ClientItem.h">
-
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\TcpServer.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-
     <ClCompile Include="Server.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="ServerDlg.cpp">
-
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TcpServer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
