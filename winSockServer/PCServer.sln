@@ -4,9 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.32929.386
 MinimumVisualStudioVersion = 10.0.40219.1
 
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Server", "xads_PCServer\xads_PCServer.vcxproj", "{D2CA8DC5-D354-454B-8374-2A94302CD924}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Server", "PCServer\PCServer.vcxproj", "{D2CA8DC5-D354-454B-8374-2A94302CD924}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client", "..\winSockClient\xads_PCClient\xads_PCClient.vcxproj", "{0DF2BC3A-5E6C-4FF2-A8DB-AB7581FA084E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client", "..\winSockClient\PCClient\PCClient.vcxproj", "{0DF2BC3A-5E6C-4FF2-A8DB-AB7581FA084E}"
 
 EndProject
 Global

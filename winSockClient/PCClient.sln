@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xads_PCClient", "xads_PCClient\xads_PCClient.vcxproj", "{0DF2BC3A-5E6C-4FF2-A8DB-AB7581FA084E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PCClient", "PCClient\PCClient.vcxproj", "{0DF2BC3A-5E6C-4FF2-A8DB-AB7581FA084E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -16,10 +16,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
-    <None Include="res\xads_PCClient.rc2">
+    <None Include="res\PCClient.rc2">
       <Filter>资源文件</Filter>
     </None>
-    <None Include="res\xads_PCClient.ico">
+    <None Include="res\PCClient.ico">
       <Filter>资源文件</Filter>
     </None>
   </ItemGroup>
@@ -56,7 +56,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="xads_PCClient.rc">
+    <ResourceCompile Include="PCClient.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
   </ItemGroup>
