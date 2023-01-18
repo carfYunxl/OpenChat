@@ -2,7 +2,7 @@
 #include "afxwin.h"
 #include "ClientItem.h"
 
-BOOL socket_Select(SOCKET hSocket,DWORD nTimeOut,BOOL bRead);
+
 UINT ListenThreadFunc(LPVOID Lparam);
 UINT ClientThreadProc(LPVOID Lparam);
 CString GetTime();
@@ -43,6 +43,7 @@ public:
 	void SendClientMsg(CString strMsg,CClientItem * WhoseItem);
 	BOOL TrayMyIcon(BOOL isAdd);
 	BOOL StartServer(void);
+	BOOL socket_Select(SOCKET hSocket, DWORD nTimeOut, BOOL bRead);
 
 	SOCKET	m_SockListen;
 	UINT	m_ServicePort;
@@ -51,6 +52,7 @@ public:
 
 	CArray<CClientItem> m_ClientArray;
 private:
-	BOOL equal(const CClientItem *p1 , const CClientItem * p2);
+	BOOL	equal(const CClientItem *p1 , const CClientItem * p2);
 	LRESULT OnTrayCallbackMsg(WPARAM wparam , LPARAM lparam);
+
 };

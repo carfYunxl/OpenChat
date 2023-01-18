@@ -205,9 +205,7 @@ UINT ListenThreadFunc(LPVOID Lparam)
 	//进入循环，监听端口
 	while (pServer->m_isServerOpen)
 	{
-		if (socket_Select
-		
-		(pServer->m_SockListen,100,TRUE))
+		if (pServer->socket_Select(pServer->m_SockListen,100,TRUE))
 		{
 			sockaddr_in clientAddr;
 			int iLen = sizeof(sockaddr_in);
@@ -263,7 +261,15 @@ UINT ClientThreadProc(LPVOID Lparam)
 	return 0;
 }
 
-BOOL socket_Select(SOCKET hSocket,DWORD nTimeOut,BOOL bRead){
+/**
+* polling one socket;
+* select(_1, readfd, writefd, exceptfd,_2);
+* see which type of socket is;
+* and check it is been set!
+* 
+* 可以参考win iocp模型，比select模型更好！
+*/
+BOOL Cxads_PCServerDlg::socket_Select(SOCKET hSocket,DWORD nTimeOut,BOOL bRead){
 	FD_SET fdset;
 	timeval tv;
 	FD_ZERO(&fdset);
@@ -280,6 +286,7 @@ BOOL socket_Select(SOCKET hSocket,DWORD nTimeOut,BOOL bRead){
 	{
 		iRet = select(0,NULL,&fdset,NULL,&tv);
 	}
+
 	if (iRet <= 0)
 	{
 		return FALSE;
