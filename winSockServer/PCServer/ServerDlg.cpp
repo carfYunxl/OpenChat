@@ -231,6 +231,7 @@ UINT ListenThreadFunc(LPVOID Lparam)
 			Sleep(100);
 		}
 	}
+	return 1;
 }
 
 #define MAX_BUFF 256
