@@ -180,7 +180,7 @@ UINT ListenThreadFunc(LPVOID Lparam)
 	Cxads_PCServerDlg * pServer = (Cxads_PCServerDlg *)Lparam;;
 	if (INVALID_SOCKET == (pServer->m_SockListen = socket(AF_INET,SOCK_STREAM,IPPROTO_TCP)))
 	{
-		AfxMessageBox(_T("建立socket失败"));
+		AfxMessageBox(_T("建立listen socket失败"));
 		return 0;
 	}
 	sockaddr_in service;
@@ -205,7 +205,7 @@ UINT ListenThreadFunc(LPVOID Lparam)
 	//进入循环，监听端口
 	while (pServer->m_isServerOpen)
 	{
-		if (pServer->socket_Select(pServer->m_SockListen,100,TRUE))
+		if (socket_Select(pServer->m_SockListen,100,TRUE))
 		{
 			sockaddr_in clientAddr;
 			int iLen = sizeof(sockaddr_in);
@@ -269,7 +269,7 @@ UINT ClientThreadProc(LPVOID Lparam)
 * 
 * 可以参考win iocp模型，比select模型更好！
 */
-BOOL Cxads_PCServerDlg::socket_Select(SOCKET hSocket,DWORD nTimeOut,BOOL bRead){
+BOOL socket_Select(SOCKET hSocket,DWORD nTimeOut,BOOL bRead){
 	FD_SET fdset;
 	timeval tv;
 	FD_ZERO(&fdset);

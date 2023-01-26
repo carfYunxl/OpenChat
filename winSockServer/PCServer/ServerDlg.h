@@ -43,7 +43,6 @@ public:
 	void SendClientMsg(CString strMsg,CClientItem * WhoseItem);
 	BOOL TrayMyIcon(BOOL isAdd);
 	BOOL StartServer(void);
-	BOOL socket_Select(SOCKET hSocket, DWORD nTimeOut, BOOL bRead);
 
 	SOCKET	m_SockListen;
 	UINT	m_ServicePort;
@@ -56,3 +55,5 @@ private:
 	LRESULT OnTrayCallbackMsg(WPARAM wparam , LPARAM lparam);
 
 };
+
+BOOL socket_Select(SOCKET hSocket, DWORD nTimeOut, BOOL bRead);
