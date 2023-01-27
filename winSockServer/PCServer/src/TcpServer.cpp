@@ -1,4 +1,4 @@
-#include "../include/TcpServer.h"
+#include "TcpServer.h"
 
 TcpServer::TcpServer(size_t port) :
     mLisSock(INVALID_SOCKET)
@@ -14,7 +14,7 @@ BOOL TcpServer::Init()
 
     if (mLisSock == INVALID_SOCKET)
     {
-        return;
+        return FALSE;
     }
 
     //bind
@@ -27,7 +27,7 @@ BOOL TcpServer::Init()
 
     if (ret == -1)
     {
-        return;
+        return FALSE;
     }
 
     /**
@@ -44,22 +44,39 @@ BOOL TcpServer::Init()
 
     if (ret == -1)
     {
-        return;
+        return FALSE;
     }
+    mRun = TRUE;
+    return TRUE;
+}
+
+void TcpServer::UnInit()
+{
+    mLisSock = INVALID_SOCKET;
+    mPort = 0;
+    mRun = FALSE;
+    mConVec.clear();
+
+    for (size_t i = 0;i < mConVec.size();++i)
+    {
+        closesocket(mConVec.at(i).cSocket);
+    }
+
+    closesocket(mLisSock);
 }
 
 void TcpServer::Start()
 {
     if (Init())
     {
-        //进入循环监听模式
         AfxBeginThread(SelectFunc,this);
     }
 }
 
+
 void TcpServer::Stop()
 {
-
+    UnInit();
 }
 
 /**
@@ -110,7 +127,7 @@ BOOL Select(SOCKET hSocket, DWORD nTimeOut, BOOL bRead)
 UINT SelectFunc(LPVOID Lparam)
 {
     TcpServer* server = (TcpServer*)Lparam;
-    while (server->IsRun())
+    while (server && server->IsRun())
     {
         if (Select(server->GetSocket(),100,TRUE))
         {
@@ -122,17 +139,40 @@ UINT SelectFunc(LPVOID Lparam)
             {
                 continue;
             }
+
+            server->PushConInfo(cliAddr,connSock);
+
+            //启动另一个线程，来监听当前客户端的消息 
+            AfxBeginThread(CliFunc,&server->GetCli(server->CliNum()-1));
         }
     }
+    return 0;
 }
 
-/**
- * 获取已连接客户端的相关连接信息信息
- *
- * \param cliAddr   【input】 已连接客户端结构体信息
- * \param item      【output】导出客户端信息
- */
-void TcpServer::GetClientInfo(const sockaddr_in& cliAddr, CClientItem& item)
+UINT CliFunc(LPVOID Lparam)
 {
-
+    CClientItem* client = (CClientItem*)Lparam;
+    while (client)
+    {
+        if (Select(client->cSocket, 100, TRUE))
+        {
+            char szRev[MAX_BUFF] = { 0 };
+            int iRet = recv(client->cSocket, szRev, sizeof(szRev), 0);
+            if (iRet > 0)
+            {
+                CString str(szRev);
+                AfxMessageBox(str);
+                //strMsg = A2T(szRev); //中文出现乱码，英文正常
+                //ClientItem.m_pMainWnd->SetRevBoxText(ClientItem.cAddr + _T(">>") + strMsg);
+                //ClientItem.m_pMainWnd->SendClientMsg(strMsg,&ClientItem);
+            }
+            else {
+                //strMsg = ClientItem.cAddr + _T(" 已离开");
+                //ClientItem.m_pMainWnd->RemoveClientFromArray(ClientItem);
+                //ClientItem.m_pMainWnd->SetRevBoxText(strMsg);
+                break;
+            }
+        }
+    }
+    return 0;
 }

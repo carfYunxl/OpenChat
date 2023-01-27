@@ -5,22 +5,30 @@
 #ifndef _CLIENT_ITEM_H_
 #define _CLIENT_ITEM_H_
 
-
 #include "stdafx.h"
+#include <string>
+
 class Cxads_PCServerDlg;
 
 class CClientItem
 {
 public:
-	CClientItem():
-		cSocket(INVALID_SOCKET)
-		,cPort(0)
-		,m_pMainWnd(NULL)
+	CClientItem() = default;
+	CClientItem(const char* addr,size_t port,SOCKET socket)
+		: cAddr(addr)
+		, cPort(port)
+		, cSocket(socket)
 	{}
-	CString cIp;						//客户端的IP
-	size_t	cPort;						//客户端的端口号
-	SOCKET	cSocket;					//客户端的Socket
-	Cxads_PCServerDlg *m_pMainWnd;		//this server dlg 
+
+	void operator=(const CClientItem& rhs) 
+	{
+		this->cAddr = rhs.cAddr;
+		this->cPort = rhs.cPort;
+		this->cSocket = rhs.cSocket;
+	}
+	std::string	cAddr;						//客户端的IP
+	size_t		cPort;						//客户端的端口号
+	SOCKET		cSocket;					//客户端的Socket
 };
 
 

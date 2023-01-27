@@ -2,6 +2,7 @@
 #include "Server.h"
 #include "ServerDlg.h"
 #include "afxdialogex.h"
+#include "TcpServer.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -35,16 +36,15 @@ END_MESSAGE_MAP()
 
 Cxads_PCServerDlg::Cxads_PCServerDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(Cxads_PCServerDlg::IDD, pParent)
-	, m_isServerOpen(FALSE)
-	, m_SockListen(NULL)
 	, m_ServicePort(0)
+	, mServer(new TcpServer(8888))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
 Cxads_PCServerDlg::~Cxads_PCServerDlg()
 {
-	
+	delete mServer;
 }
 
 void Cxads_PCServerDlg::DoDataExchange(CDataExchange* pDX)
@@ -158,81 +158,16 @@ void Cxads_PCServerDlg::OnBnClickedButtonstart()
 		GetDlgItem(IDC_EDITPORT)->SetFocus();
 		return ;
 	}
-	StartServer();
-	m_isServerOpen = TRUE;
 	OnEnChangeEditsendbox();
 
 	CString strServerTitle;
 	strServerTitle.Format(_T("Server : %d"),m_ServicePort);
 	SetWindowText(strServerTitle);
+
+	mServer->Start();
 }
-
-
-BOOL Cxads_PCServerDlg::StartServer(void)
-{
-	//创建线程
-	AfxBeginThread(ListenThreadFunc,this);
-	return TRUE;
-}
-
-UINT ListenThreadFunc(LPVOID Lparam)
-{
-	Cxads_PCServerDlg * pServer = (Cxads_PCServerDlg *)Lparam;;
-	if (INVALID_SOCKET == (pServer->m_SockListen = socket(AF_INET,SOCK_STREAM,IPPROTO_TCP)))
-	{
-		AfxMessageBox(_T("建立listen socket失败"));
-		return 0;
-	}
-	sockaddr_in service;
-	service.sin_family = AF_INET;
-	service.sin_addr.s_addr = htonl(INADDR_ANY);
-	service.sin_port = htons(pServer->m_ServicePort);
-	if (0 != bind(pServer->m_SockListen,(sockaddr *)&service,sizeof(sockaddr_in)))
-	{
-		AfxMessageBox(_T("绑定端口失败"));
-		return 0;
-	}
-	if (0 != listen(pServer->m_SockListen,5))
-	{
-		AfxMessageBox(_T("监听端口失败"));
-		return 0;
-	}
-
-	//提示建立socket成功
-	pServer->EnableWindow(IDC_BUTTONEND,TRUE);
-	pServer->EnableWindow(IDC_BUTTONSTART,FALSE);
-	pServer->SetRevBoxText(_T("服务启动成功,开始监听端口"));
-	//进入循环，监听端口
-	while (pServer->m_isServerOpen)
-	{
-		if (socket_Select(pServer->m_SockListen,100,TRUE))
-		{
-			sockaddr_in clientAddr;
-			int iLen = sizeof(sockaddr_in);
-			SOCKET accSock = accept(pServer->m_SockListen,(struct sockaddr *)&clientAddr,&iLen);
-			if (accSock == INVALID_SOCKET)
-			{
-				continue;
-			}
-			//将节点加入链中
-			CClientItem cItem;
-			cItem.cSocket = accSock;						//客户端的Socket，用于与客户端通信
-			cItem.cIp = inet_ntoa(clientAddr.sin_addr);		//IP地址
-			cItem.cPort = ntohs(clientAddr.sin_port);		//端口
-			cItem.m_pMainWnd = pServer;						//Server指针
-			int idx = pServer->m_ClientArray.Add(cItem);	//idx是第x个连接的客户端
-			AfxBeginThread(ClientThreadProc, &pServer->m_ClientArray.GetAt(idx));
-
-			CString strCliPort;
-			strCliPort.Format(_T(":%d"),cItem.cPort);
-			pServer->SetRevBoxText(_T("[") + cItem.cIp + strCliPort + _T("] 上线"));
-			Sleep(100);
-		}
-	}
-	return 1;
-}
-
 #define MAX_BUFF 256
+#if 0
 UINT ClientThreadProc(LPVOID Lparam)
 { 
 	//利用异步IO模型循环读取socket内的信息，并发送给各个用户
@@ -247,72 +182,26 @@ UINT ClientThreadProc(LPVOID Lparam)
 			int iRet = recv(ClientItem.cSocket,szRev,sizeof(szRev),0);
 			if (iRet > 0)
 			{
-				strMsg = A2T(szRev); //中文出现乱码，英文正常
-				ClientItem.m_pMainWnd->SetRevBoxText(ClientItem.cIp + _T(">>") + strMsg);
-				ClientItem.m_pMainWnd->SendClientMsg(strMsg,&ClientItem);
+				//strMsg = A2T(szRev); //中文出现乱码，英文正常
+				//ClientItem.m_pMainWnd->SetRevBoxText(ClientItem.cAddr + _T(">>") + strMsg);
+				//ClientItem.m_pMainWnd->SendClientMsg(strMsg,&ClientItem);
 			}else{
-				strMsg = ClientItem.cIp + _T(" 已离开");
-				ClientItem.m_pMainWnd->RemoveClientFromArray(ClientItem);
-				ClientItem.m_pMainWnd->SetRevBoxText(strMsg);
+				//strMsg = ClientItem.cAddr + _T(" 已离开");
+				//ClientItem.m_pMainWnd->RemoveClientFromArray(ClientItem);
+				//ClientItem.m_pMainWnd->SetRevBoxText(strMsg);
 				break;
 			}
 		}
 	}
 	return 0;
 }
-
-/**
-* polling one socket;
-* select(_1, readfd, writefd, exceptfd,_2);
-* see which type of socket is;
-* and check it is been set!
-* 
-* 可以参考win iocp模型，比select模型更好！
-*/
-BOOL socket_Select(SOCKET hSocket,DWORD nTimeOut,BOOL bRead){
-	FD_SET fdset;
-	timeval tv;
-	FD_ZERO(&fdset);
-	FD_SET(hSocket,&fdset);
-	nTimeOut = nTimeOut > 1000 ? 1000 : nTimeOut;
-	tv.tv_sec = 0;
-	tv.tv_usec = nTimeOut;
-	int iRet = 0;
-	if (bRead)
-	{
-		iRet = select(0,&fdset,NULL,NULL,&tv);
-	} 
-	else
-	{
-		iRet = select(0,NULL,&fdset,NULL,&tv);
-	}
-
-	if (iRet <= 0)
-	{
-		return FALSE;
-	} 
-	else if (FD_ISSET(hSocket,&fdset))
-	{
-		return TRUE;
-	}
-	return FALSE;
-}
-
+#endif
 void Cxads_PCServerDlg::OnBnClickedButtonend()
 {
-	// TODO: 在此添加控件通知处理程序代码
-	int AllClient = m_ClientArray.GetCount();
-	for (int idx = 0 ; idx < AllClient ; idx++)
-	{
-		closesocket(m_ClientArray.GetAt(idx).cSocket);
-	}
-	m_ClientArray.RemoveAll();
-	closesocket(m_SockListen);
 	EnableWindow(IDC_BUTTONSEND,FALSE);
 	EnableWindow(IDC_BUTTONSTART,TRUE);
 	EnableWindow(IDC_BUTTONEND,FALSE);
 	SetRevBoxText(_T("停止监听端口"));
-	m_isServerOpen = FALSE;
 }
 
 //设置文本框文本
@@ -324,14 +213,6 @@ void Cxads_PCServerDlg::SetRevBoxText(CString strMsg){
 //客户端下线，从链表移除该节点
 void Cxads_PCServerDlg::RemoveClientFromArray(CClientItem in_item)
 {
-	for (int idx = 0 ; idx < m_ClientArray.GetCount() ; idx++)
-	{
-		//根据端口和ip地址，就可以唯一确定一个进程
-		if (in_item.cPort == m_ClientArray[idx].cPort && in_item.cIp == m_ClientArray[idx].cIp)
-		{
-			m_ClientArray.RemoveAt(idx);
-		}
-	}
 	return;
 }
 
@@ -348,10 +229,6 @@ CString GetTime()
 //退出按钮
 void Cxads_PCServerDlg::OnBnClickedButtonquit()
 {
-	if (m_isServerOpen)
-	{
-		OnBnClickedButtonend();
-	}
 	SendMessage(WM_CLOSE);
 }
 
@@ -360,18 +237,11 @@ void Cxads_PCServerDlg::SendClientMsg(CString strMsg,CClientItem * pWhoseItem)
 	USES_CONVERSION;
 	char szBuf[256] = {0};
 	strcpy_s(szBuf,256,T2A(strMsg));
-	for (int i = 0 ; i < m_ClientArray.GetCount() ; i++)
-	{
-		if (!pWhoseItem || !equal(pWhoseItem,&(m_ClientArray.GetAt(i))))
-		{
-			send(m_ClientArray.GetAt(i).cSocket,szBuf,256,0);
-		}
-	}
 }
 
 BOOL Cxads_PCServerDlg::equal(const CClientItem * p1 , const CClientItem * p2)
 {
-	if (p1->cSocket == p2->cSocket && p1->cIp == p2->cIp)
+	if (p1->cSocket == p2->cSocket && p1->cAddr == p2->cAddr)
 	{
 		return TRUE;
 	} 
@@ -402,7 +272,7 @@ void Cxads_PCServerDlg::OnEnChangeEditsendbox()
 {
 	CString strMsg;
 	GetDlgItemText(IDC_EDITSENDBOX,strMsg);
-	if (strMsg == _T("") || !m_isServerOpen)
+	if (strMsg == _T(""))
 	{
 		EnableWindow(IDC_BUTTONSEND,FALSE);
 	}
@@ -441,10 +311,9 @@ LRESULT Cxads_PCServerDlg::OnTrayCallbackMsg(WPARAM wparam , LPARAM lparam)
 	CBitmap IconBitmapOn;
 	CBitmap IconBitmapOff;
 	CMenu mMenu, * pMenu = NULL;
-//	CBitmap IconBitmapOn ,IconBitmapOff;
 	IconBitmapOn.LoadBitmap(IDB_BITMAPON);
 	IconBitmapOff.LoadBitmap(IDB_BITMAPOFF);
-	if (m_isServerOpen)
+	if (1)
 	{
 		mMenu.LoadMenu(IDR_MENU1);
 		mMenu.SetMenuItemBitmaps(ID_MENU_SERVER,MF_BYCOMMAND | MF_STRING | MF_ENABLED,&IconBitmapOff,&IconBitmapOn);
@@ -505,7 +374,7 @@ void Cxads_PCServerDlg::OnMenuQuit()
 //点击菜单上打开/关闭服务器的选项
 void Cxads_PCServerDlg::OnMenuServer()
 {
-	if (TRUE == m_isServerOpen)
+	if (1)
 	{
 		OnBnClickedButtonend();
 	} 

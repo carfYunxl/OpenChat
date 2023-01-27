@@ -2,11 +2,10 @@
 #include "afxwin.h"
 #include "ClientItem.h"
 
-
-UINT ListenThreadFunc(LPVOID Lparam);
-UINT ClientThreadProc(LPVOID Lparam);
 CString GetTime();
 
+
+class TcpServer;
 class Cxads_PCServerDlg : public CDialogEx
 {
 public:
@@ -42,18 +41,12 @@ public:
 	void RemoveClientFromArray(CClientItem in_item);
 	void SendClientMsg(CString strMsg,CClientItem * WhoseItem);
 	BOOL TrayMyIcon(BOOL isAdd);
-	BOOL StartServer(void);
 
-	SOCKET	m_SockListen;
 	UINT	m_ServicePort;
 	CEdit	m_EditRevBox;
-	BOOL	m_isServerOpen;
-
-	CArray<CClientItem> m_ClientArray;
 private:
 	BOOL	equal(const CClientItem *p1 , const CClientItem * p2);
 	LRESULT OnTrayCallbackMsg(WPARAM wparam , LPARAM lparam);
-
+private:
+	TcpServer* mServer;
 };
-
-BOOL socket_Select(SOCKET hSocket, DWORD nTimeOut, BOOL bRead);
