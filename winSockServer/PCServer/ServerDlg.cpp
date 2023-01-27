@@ -34,43 +34,43 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 
-Cxads_PCServerDlg::Cxads_PCServerDlg(CWnd* pParent /*=NULL*/)
-	: CDialogEx(Cxads_PCServerDlg::IDD, pParent)
+PCServerDlg::PCServerDlg(CWnd* pParent /*=NULL*/)
+	: CDialogEx(PCServerDlg::IDD, pParent)
 	, m_ServicePort(0)
-	, mServer(new TcpServer(8888))
+	, mServer(new TcpServer(8888,this))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
-Cxads_PCServerDlg::~Cxads_PCServerDlg()
+PCServerDlg::~PCServerDlg()
 {
 	delete mServer;
 }
 
-void Cxads_PCServerDlg::DoDataExchange(CDataExchange* pDX)
+void PCServerDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_EDITGETBOX, m_EditRevBox);
 }
 
-BEGIN_MESSAGE_MAP(Cxads_PCServerDlg, CDialogEx)
+BEGIN_MESSAGE_MAP(PCServerDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-	ON_BN_CLICKED(IDC_BUTTONSTART, &Cxads_PCServerDlg::OnBnClickedButtonstart)
-	ON_BN_CLICKED(IDC_BUTTONEND, &Cxads_PCServerDlg::OnBnClickedButtonend)
-	ON_BN_CLICKED(IDC_BUTTONQUIT, &Cxads_PCServerDlg::OnBnClickedButtonquit)
-	ON_BN_CLICKED(IDC_BUTTONSEND, &Cxads_PCServerDlg::OnBnClickedButtonsend)
-	ON_EN_CHANGE(IDC_EDITSENDBOX, &Cxads_PCServerDlg::OnEnChangeEditsendbox)
+	ON_BN_CLICKED(IDC_BUTTONSTART, &PCServerDlg::OnBnClickedButtonstart)
+	ON_BN_CLICKED(IDC_BUTTONEND, &PCServerDlg::OnBnClickedButtonend)
+	ON_BN_CLICKED(IDC_BUTTONQUIT, &PCServerDlg::OnBnClickedButtonquit)
+	ON_BN_CLICKED(IDC_BUTTONSEND, &PCServerDlg::OnBnClickedButtonsend)
+	ON_EN_CHANGE(IDC_EDITSENDBOX, &PCServerDlg::OnEnChangeEditsendbox)
 	ON_MESSAGE(WM_TRAYICON_SERVER,OnTrayCallbackMsg)
-	ON_BN_CLICKED(IDC_BUTTONHIDE, &Cxads_PCServerDlg::OnBnClickedButtonhide)
-	ON_COMMAND(ID_MENU_SHOW, &Cxads_PCServerDlg::OnMenuShow)
-	ON_COMMAND(ID_MENU_QUIT, &Cxads_PCServerDlg::OnMenuQuit)
-	ON_COMMAND(ID_MENU_SERVER, &Cxads_PCServerDlg::OnMenuServer)
+	ON_BN_CLICKED(IDC_BUTTONHIDE, &PCServerDlg::OnBnClickedButtonhide)
+	ON_COMMAND(ID_MENU_SHOW, &PCServerDlg::OnMenuShow)
+	ON_COMMAND(ID_MENU_QUIT, &PCServerDlg::OnMenuQuit)
+	ON_COMMAND(ID_MENU_SERVER, &PCServerDlg::OnMenuServer)
 	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
-BOOL Cxads_PCServerDlg::OnInitDialog()
+BOOL PCServerDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
@@ -102,7 +102,7 @@ BOOL Cxads_PCServerDlg::OnInitDialog()
 	return TRUE; 
 }
 
-void Cxads_PCServerDlg::OnSysCommand(UINT nID, LPARAM lParam)
+void PCServerDlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
 	if ((nID & 0xFFF0) == IDM_ABOUTBOX)
 	{
@@ -115,7 +115,7 @@ void Cxads_PCServerDlg::OnSysCommand(UINT nID, LPARAM lParam)
 	}
 }
 
-void Cxads_PCServerDlg::OnPaint()
+void PCServerDlg::OnPaint()
 {
 	if (IsIconic())
 	{
@@ -138,17 +138,17 @@ void Cxads_PCServerDlg::OnPaint()
 	}
 }
 
-HCURSOR Cxads_PCServerDlg::OnQueryDragIcon()
+HCURSOR PCServerDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-BOOL Cxads_PCServerDlg::EnableWindow(DWORD DlgId, BOOL bUsed)
+BOOL PCServerDlg::EnableWindow(DWORD DlgId, BOOL bUsed)
 {
 	return GetDlgItem(DlgId)->EnableWindow(bUsed);
 }
 
-void Cxads_PCServerDlg::OnBnClickedButtonstart()
+void PCServerDlg::OnBnClickedButtonstart()
 {
 	m_ServicePort = GetDlgItemInt(IDC_EDITPORT);
 	if (m_ServicePort <= 1024 || m_ServicePort > 65535)
@@ -164,39 +164,17 @@ void Cxads_PCServerDlg::OnBnClickedButtonstart()
 	strServerTitle.Format(_T("Server : %d"),m_ServicePort);
 	SetWindowText(strServerTitle);
 
+	mServer->SetPort(GetDlgItemInt(IDC_EDITPORT));
 	mServer->Start();
+
+	EnableWindow(IDC_BUTTONSEND, TRUE);
+	EnableWindow(IDC_BUTTONSTART, FALSE);
+	EnableWindow(IDC_BUTTONEND, TRUE);
+
+	SetRevBoxText(_T("服务器已开启！"));
 }
-#define MAX_BUFF 256
-#if 0
-UINT ClientThreadProc(LPVOID Lparam)
-{ 
-	//利用异步IO模型循环读取socket内的信息，并发送给各个用户
-	USES_CONVERSION;
-	CString strMsg;
-	CClientItem ClientItem = *(CClientItem *)Lparam;
-	while (TRUE)
-	{
-		if (socket_Select(ClientItem.cSocket,100,TRUE))
-		{
-			char szRev[MAX_BUFF] = {0};
-			int iRet = recv(ClientItem.cSocket,szRev,sizeof(szRev),0);
-			if (iRet > 0)
-			{
-				//strMsg = A2T(szRev); //中文出现乱码，英文正常
-				//ClientItem.m_pMainWnd->SetRevBoxText(ClientItem.cAddr + _T(">>") + strMsg);
-				//ClientItem.m_pMainWnd->SendClientMsg(strMsg,&ClientItem);
-			}else{
-				//strMsg = ClientItem.cAddr + _T(" 已离开");
-				//ClientItem.m_pMainWnd->RemoveClientFromArray(ClientItem);
-				//ClientItem.m_pMainWnd->SetRevBoxText(strMsg);
-				break;
-			}
-		}
-	}
-	return 0;
-}
-#endif
-void Cxads_PCServerDlg::OnBnClickedButtonend()
+
+void PCServerDlg::OnBnClickedButtonend()
 {
 	EnableWindow(IDC_BUTTONSEND,FALSE);
 	EnableWindow(IDC_BUTTONSTART,TRUE);
@@ -205,13 +183,13 @@ void Cxads_PCServerDlg::OnBnClickedButtonend()
 }
 
 //设置文本框文本
-void Cxads_PCServerDlg::SetRevBoxText(CString strMsg){
+void PCServerDlg::SetRevBoxText(CString strMsg){
 	m_EditRevBox.SetSel(-1,-1);
 	m_EditRevBox.ReplaceSel(GetTime() + _T("\r\n  ") + strMsg + _T("\r\n"));
 }
 
 //客户端下线，从链表移除该节点
-void Cxads_PCServerDlg::RemoveClientFromArray(CClientItem in_item)
+void PCServerDlg::RemoveClientFromArray(CClientItem in_item)
 {
 	return;
 }
@@ -227,19 +205,19 @@ CString GetTime()
 }
 
 //退出按钮
-void Cxads_PCServerDlg::OnBnClickedButtonquit()
+void PCServerDlg::OnBnClickedButtonquit()
 {
 	SendMessage(WM_CLOSE);
 }
 
-void Cxads_PCServerDlg::SendClientMsg(CString strMsg,CClientItem * pWhoseItem)
+void PCServerDlg::SendClientMsg(CString strMsg,CClientItem * pWhoseItem)
 {
 	USES_CONVERSION;
 	char szBuf[256] = {0};
 	strcpy_s(szBuf,256,T2A(strMsg));
 }
 
-BOOL Cxads_PCServerDlg::equal(const CClientItem * p1 , const CClientItem * p2)
+BOOL PCServerDlg::equal(const CClientItem * p1 , const CClientItem * p2)
 {
 	if (p1->cSocket == p2->cSocket && p1->cAddr == p2->cAddr)
 	{
@@ -251,7 +229,7 @@ BOOL Cxads_PCServerDlg::equal(const CClientItem * p1 , const CClientItem * p2)
 	}
 }
 
-void Cxads_PCServerDlg::OnBnClickedButtonsend()
+void PCServerDlg::OnBnClickedButtonsend()
 {
 	CString strSerPort;
 	strSerPort.Format(_T("[Server : %d]:\n"), m_ServicePort);
@@ -268,7 +246,7 @@ void Cxads_PCServerDlg::OnBnClickedButtonsend()
 /**
 * 如果输入框有内容，就enable发送按钮
 */
-void Cxads_PCServerDlg::OnEnChangeEditsendbox()
+void PCServerDlg::OnEnChangeEditsendbox()
 {
 	CString strMsg;
 	GetDlgItemText(IDC_EDITSENDBOX,strMsg);
@@ -281,7 +259,7 @@ void Cxads_PCServerDlg::OnEnChangeEditsendbox()
 	}
 }
 
-BOOL Cxads_PCServerDlg::TrayMyIcon(BOOL isAdd)
+BOOL PCServerDlg::TrayMyIcon(BOOL isAdd)
 {
 	BOOL bReturn = FALSE;
 	NOTIFYICONDATA tnd;
@@ -306,7 +284,7 @@ BOOL Cxads_PCServerDlg::TrayMyIcon(BOOL isAdd)
 	return bReturn;
 }
 
-LRESULT Cxads_PCServerDlg::OnTrayCallbackMsg(WPARAM wparam , LPARAM lparam)
+LRESULT PCServerDlg::OnTrayCallbackMsg(WPARAM wparam , LPARAM lparam)
 {
 	CBitmap IconBitmapOn;
 	CBitmap IconBitmapOff;
@@ -349,7 +327,7 @@ LRESULT Cxads_PCServerDlg::OnTrayCallbackMsg(WPARAM wparam , LPARAM lparam)
 }
 
 //点击隐藏按钮
-void Cxads_PCServerDlg::OnBnClickedButtonhide()
+void PCServerDlg::OnBnClickedButtonhide()
 {
 	ShowWindow(SW_MINIMIZE);
 	Sleep(200);
@@ -357,7 +335,7 @@ void Cxads_PCServerDlg::OnBnClickedButtonhide()
 }
 
 //点击菜单上的显示
-void Cxads_PCServerDlg::OnMenuShow()
+void PCServerDlg::OnMenuShow()
 {
 	TrayMyIcon(FALSE);
 	ShowWindow(SW_RESTORE);
@@ -365,14 +343,14 @@ void Cxads_PCServerDlg::OnMenuShow()
 }
 
 //点击菜单上退出
-void Cxads_PCServerDlg::OnMenuQuit()
+void PCServerDlg::OnMenuQuit()
 {
 	TrayMyIcon(FALSE);
 	OnBnClickedButtonquit();
 }
 
 //点击菜单上打开/关闭服务器的选项
-void Cxads_PCServerDlg::OnMenuServer()
+void PCServerDlg::OnMenuServer()
 {
 	if (1)
 	{
@@ -386,7 +364,7 @@ void Cxads_PCServerDlg::OnMenuServer()
 }
 
 //当窗口大小改变时发送该消息
-void Cxads_PCServerDlg::OnSize(UINT nType, int cx, int cy)
+void PCServerDlg::OnSize(UINT nType, int cx, int cy)
 {
 	CDialogEx::OnSize(nType, cx, cy);
 	if (SIZE_MINIMIZED == nType) //若是最小化，则隐藏到托盘

@@ -8,7 +8,7 @@
 #include "stdafx.h"
 #include <string>
 
-class Cxads_PCServerDlg;
+class PCServerDlg;
 
 class CClientItem
 {

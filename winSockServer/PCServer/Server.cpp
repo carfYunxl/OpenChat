@@ -38,7 +38,7 @@ BOOL Cxads_PCServerApp::InitInstance()
 	CShellManager *pShellManager = new CShellManager;
 	SetRegistryKey(_T("应用程序向导生成的本地应用程序"));
 
-	Cxads_PCServerDlg dlg;
+	PCServerDlg dlg;
 	m_pMainWnd = &dlg;
 	INT_PTR nResponse = dlg.DoModal();
 	if (nResponse == IDOK)

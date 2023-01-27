@@ -4,14 +4,13 @@
 
 CString GetTime();
 
-
 class TcpServer;
-class Cxads_PCServerDlg : public CDialogEx
+class PCServerDlg : public CDialogEx
 {
 public:
-	Cxads_PCServerDlg(CWnd* pParent = NULL);
-	~Cxads_PCServerDlg();
-	enum { IDD = IDD_XADS_PCSERVER_DIALOG };
+	PCServerDlg(CWnd* pParent = NULL);
+	~PCServerDlg();
+	enum { IDD = IDD_PCSERVER_DIALOG };
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);

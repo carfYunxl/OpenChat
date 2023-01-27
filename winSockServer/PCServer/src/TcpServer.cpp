@@ -1,9 +1,11 @@
 #include "TcpServer.h"
+#include "ServerDlg.h"
 
-TcpServer::TcpServer(size_t port) :
+TcpServer::TcpServer(size_t port, PCServerDlg* parent) :
     mLisSock(INVALID_SOCKET)
     , mPort(port)
     , mRun(FALSE)
+    , mpMainWind(parent)
 {
 }
 
@@ -143,7 +145,7 @@ UINT SelectFunc(LPVOID Lparam)
             server->PushConInfo(cliAddr,connSock);
 
             //启动另一个线程，来监听当前客户端的消息 
-            AfxBeginThread(CliFunc,&server->GetCli(server->CliNum()-1));
+            AfxBeginThread(CliFunc,&server->GetClient(server->ClientNum()-1));
         }
     }
     return 0;
@@ -160,11 +162,10 @@ UINT CliFunc(LPVOID Lparam)
             int iRet = recv(client->cSocket, szRev, sizeof(szRev), 0);
             if (iRet > 0)
             {
-                CString str(szRev);
-                AfxMessageBox(str);
-                //strMsg = A2T(szRev); //中文出现乱码，英文正常
-                //ClientItem.m_pMainWnd->SetRevBoxText(ClientItem.cAddr + _T(">>") + strMsg);
-                //ClientItem.m_pMainWnd->SendClientMsg(strMsg,&ClientItem);
+                //USES_CONVERSION;
+                //CString strMsg = A2T(szRev); //中文出现乱码，英文正常
+                //mpMainWind->SetRevBoxText(ClientItem.cAddr + _T(">>") + strMsg);
+                //mpMainWind->SendClientMsg(strMsg,&ClientItem);
             }
             else {
                 //strMsg = ClientItem.cAddr + _T(" 已离开");
