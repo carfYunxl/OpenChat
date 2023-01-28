@@ -34,7 +34,6 @@ public:
 
 private:
 	ServerStatus	m_ServerStatus;
-	SOCKET			m_ClientSock;
 	CEdit			m_EditRevBox;
 	TcpClient*		m_Client;
 };

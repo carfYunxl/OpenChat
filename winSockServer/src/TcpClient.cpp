@@ -56,12 +56,12 @@ void TcpClient::DisConnect()
 void TcpClient::ClientFunc(void* pMainWin)
 {
     PCClientDlg* pDlg = (PCClientDlg*)pMainWin;
-    while (1)
+    while (pDlg)
     {
         if (Select(m_socket,100,MODE::READ))
         {
             char msg[BUF_SIZE] = { 0 };
-            size_t read = recv(m_socket, msg, BUF_SIZE, 0);
+            size_t read = recv(m_socket, msg, BUF_SIZE, MSG_PEEK);
             if (read > 0)
             {
                 pDlg->SetRevBoxText(m_ip + ">>" + std::string(msg));
@@ -95,18 +95,18 @@ bool TcpClient::Select(SOCKET socket, long timeOut, MODE mode)
     FD_ZERO(&fdset);
     FD_SET(socket, &fdset);
 
-    int iRet = 0;
+    int ret = 0;
     if (MODE::READ == mode)
     {
         //WSAAsyncSelect();
-        iRet = select(0, &fdset, NULL, NULL, &tv);
+        ret = select(0, &fdset, NULL, NULL, &tv);
     }
     else if(MODE::WRITE == mode)
     {
-        iRet = select(0, NULL, &fdset, NULL, &tv);
+        ret = select(0, NULL, &fdset, NULL, &tv);
     }
 
-    if (iRet <= 0)
+    if (ret <= 0)
     {
         return false;
     }

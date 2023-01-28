@@ -34,7 +34,6 @@ END_MESSAGE_MAP()
 
 PCClientDlg::PCClientDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(PCClientDlg::IDD, pParent)
-	,m_ClientSock(INVALID_SOCKET)
 	,m_ServerStatus(ServerStatus::OFF)
 	,m_Client(new TcpClient(8888,"127.0.0.1",this))
 {
@@ -154,7 +153,7 @@ void PCClientDlg::OnBnClickedButtonconnect()
 
 	sockaddr_in cliAddr;
 	int len = sizeof(cliAddr);
-	if (getsockname(m_ClientSock, (sockaddr*)&cliAddr, &len) != 0)
+	if (getsockname(m_Client->GetSocket(), (sockaddr*)&cliAddr, &len) != 0)
 	{
 		MessageBox(_T("获取客户端端口失败！"));
 		return;
@@ -189,7 +188,7 @@ void PCClientDlg::OnBnClickedButtonstop()
 	EnableWindow(IDC_BUTTONCONNECT,TRUE);
 	EnableWindow(IDC_BUTTONSEND,FALSE);
 	EnableWindow(IDC_BUTTONSTOP,FALSE);
-	closesocket(m_ClientSock);
+	closesocket(m_Client->GetSocket());
 	m_ServerStatus = ServerStatus::OFF;
 }
 
@@ -209,7 +208,7 @@ void PCClientDlg::OnBnClickedButtonsend()
 	int iWrite;
 	GetDlgItemText(IDC_EDITSENDBOX,strGetMsg);
 	strcpy_s(szBuf,T2A(strGetMsg));
-	iWrite = send(m_ClientSock,szBuf,256,0);
+	iWrite = send(m_Client->GetSocket(),szBuf,256,0);
 	if(SOCKET_ERROR == iWrite){
 		SetRevBoxText("发送错误\r\n");
 	}

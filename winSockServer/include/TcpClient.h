@@ -24,7 +24,7 @@ public:
 
     void    SetPort(size_t port);
     void    SetIp(const std::string& ip);
-
+    SOCKET  GetSocket() { return m_socket; }
 private:
     void    ClientFunc(void* pMainWin);
     bool    Select(SOCKET socket, long timeOut, MODE mode);
