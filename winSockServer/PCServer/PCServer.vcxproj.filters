@@ -44,10 +44,13 @@
     <ClInclude Include="Resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="ClientItem.h">
+    <ClInclude Include="..\include\ClientItem.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="include\TcpServer.h">
+    <ClInclude Include="..\include\TcpServer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\common_header.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -61,7 +64,7 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\TcpServer.cpp">
+    <ClCompile Include="..\src\TcpServer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

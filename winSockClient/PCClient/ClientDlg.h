@@ -1,11 +1,15 @@
 #pragma once
 #include "afxwin.h"
+#include "resource.h"
+#include "common_header.h"
 
+class TcpClient;
 class PCClientDlg : public CDialogEx
 {
 public:
 	PCClientDlg(CWnd* pParent = NULL);
-	enum { IDD = IDD_XADS_PCCLIENT_DIALOG };
+	~PCClientDlg();
+	enum { IDD = IDD_PCCLIENT_DIALOG };
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);
 
@@ -23,15 +27,14 @@ protected:
 	afx_msg void OnBnClickedButtonconnect();
 	DECLARE_MESSAGE_MAP()
 public:
-	BOOL ConnectSocket(PCClientDlg *);
 	BOOL EnableWindow(DWORD DlgId, BOOL bUsed);
-	void SetRevBoxText(CString strMsg);
+	void SetRevBoxText(const std::string& msg);
+
+	void SetServerState(ServerStatus state) { m_ServerStatus = state; }
 
 private:
-	BOOL isServerOn;
-	SOCKET m_ClientSock;
-	CEdit m_EditRevBox;
+	ServerStatus	m_ServerStatus;
+	SOCKET			m_ClientSock;
+	CEdit			m_EditRevBox;
+	TcpClient*		m_Client;
 };
-
-DWORD WINAPI ConnectNetworkThread(  LPVOID lpParameter);
-BOOL socket_Select(SOCKET hSocket,DWORD nTimeOut,BOOL bRead);

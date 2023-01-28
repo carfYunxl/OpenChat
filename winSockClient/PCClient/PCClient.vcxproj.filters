@@ -39,7 +39,7 @@
     <ClInclude Include="Resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="include\TcpClient.h">
+    <ClInclude Include="..\..\winSockServer\include\TcpClient.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -53,7 +53,7 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\TcpClient.cpp">
+    <ClCompile Include="..\..\winSockServer\src\TcpClient.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

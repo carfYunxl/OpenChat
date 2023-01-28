@@ -9,9 +9,8 @@
 
 #define TCP_SERVER_H_
 #include "stdafx.h"
-#include <winsock2.h>
 #include "ClientItem.h"
-#include <vector>
+#include "common_header.h"
 
 constexpr size_t MAX_BUFF = 256;
 
@@ -50,7 +49,7 @@ private:
 private:
     bool    Init();
     void    UnInit();
-    bool    Select(SOCKET socket, long nTimeOut, bool bRead);
+    bool    Select(SOCKET socket, long nTimeOut, MODE mode);
     void    DeleteClient(size_t port);
 };
 

@@ -2,6 +2,7 @@
 #include "Client.h"
 #include "ClientDlg.h"
 #include "afxdialogex.h"
+#include "TcpClient.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -33,10 +34,16 @@ END_MESSAGE_MAP()
 
 PCClientDlg::PCClientDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(PCClientDlg::IDD, pParent)
+	,m_ClientSock(INVALID_SOCKET)
+	,m_ServerStatus(ServerStatus::OFF)
+	,m_Client(new TcpClient(8888,"127.0.0.1",this))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
-	m_ClientSock = NULL;
-	isServerOn = FALSE;
+}
+
+PCClientDlg::~PCClientDlg()
+{
+	delete m_Client;
 }
 
 void PCClientDlg::DoDataExchange(CDataExchange* pDX)
@@ -132,88 +139,38 @@ HCURSOR PCClientDlg::OnQueryDragIcon()
 
 void PCClientDlg::OnBnClickedButtonconnect()
 {
-	CreateThread(0,0,ConnectNetworkThread,this,0,NULL);
-}
-
-DWORD WINAPI ConnectNetworkThread(  LPVOID lpParameter)
-{
-	PCClientDlg * pClient = (PCClientDlg *)lpParameter;
-	if(pClient->ConnectSocket(pClient))
-	{
-		
-	}
-	return 0;
-}
-
-#define MAX_BUFF 256
-BOOL PCClientDlg::ConnectSocket(PCClientDlg * pClient)
-{
-	m_ClientSock = socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
-	if (NULL == m_ClientSock)
-	{
-		MessageBox(_T("创建socket失败"));
-		return FALSE;
-	}
-	sockaddr_in sa;
-	sa.sin_family = AF_INET;
 	CString strIp;
-	UINT dPort = GetDlgItemInt(IDC_EDITPORT);
-	GetDlgItemText(IDC_IPADDRESS,strIp);
-	if (strIp == _T("0.0.0.0") || (dPort >= 65535 && dPort < 1024) || dPort == 0)
+	UINT port = GetDlgItemInt(IDC_EDITPORT);
+	GetDlgItemText(IDC_IPADDRESS, strIp);
+	if (strIp == _T("0.0.0.0") || (port >= 65535 && port < 1024) || port == 0)
 	{
 		MessageBox(_T("请输入正确IP地址或端口"));
-		return FALSE;
-	}
-	sa.sin_port = htons(dPort);
-	char szIpAdd[32];
-	USES_CONVERSION; //定义后才能使用T2A
-	sprintf_s(szIpAdd,32,"%s",T2A(strIp));
-	sa.sin_addr.S_un.S_addr = inet_addr(szIpAdd);
-	if (SOCKET_ERROR == connect(m_ClientSock,(sockaddr *)&sa,sizeof(sa)))
-	{
-		MessageBox(_T("连接客户端错误,请检查你填写的IP和端口是否错误"));
-		return FALSE;
 	}
 
-	//获取客户端端口
+	m_Client->SetPort(port);
+	m_Client->SetIp(std::string(CT2A(strIp.GetString())));
+
+	m_Client->Connect();
+
 	sockaddr_in cliAddr;
 	int len = sizeof(cliAddr);
 	if (getsockname(m_ClientSock, (sockaddr*)&cliAddr, &len) != 0)
 	{
 		MessageBox(_T("获取客户端端口失败！"));
+		return;
 	}
 
 	CString strCliTitle;
 	strCliTitle.Format(_T("Client : %d"), ntohs(cliAddr.sin_port));
 	SetWindowTextW(strCliTitle);
 
-	pClient->SetRevBoxText(_T("连接服务器成功"));
-	pClient->EnableWindow(IDC_BUTTONSTOP,TRUE);
-	pClient->EnableWindow(IDC_BUTTONCONNECT,FALSE);
-	isServerOn = TRUE;
-	OnEnChangeEditsendbox();
+	SetRevBoxText("连接服务器成功\r\n");
+	EnableWindow(IDC_BUTTONSTOP, TRUE);
+	EnableWindow(IDC_BUTTONCONNECT, FALSE);
 
-	CString strMsg;
-	while (TRUE)
-	{
-		if (socket_Select(m_ClientSock,100,TRUE))
-		{
-			char szMsg[MAX_BUFF] = {0};
-			int iRead = recv(m_ClientSock,szMsg,MAX_BUFF,0);
-			if (iRead > 0)
-			{
-				strMsg = szMsg;
-				pClient->SetRevBoxText(strIp + _T(">>") + strMsg);
-			} 
-			else
-			{
-				pClient->SetRevBoxText(_T("已断线，请重新连接"));
-				isServerOn = FALSE;
-				return TRUE;
-			}
-		}
-	}
-	return TRUE;
+	m_ServerStatus = ServerStatus::ON;
+
+	OnEnChangeEditsendbox();
 }
 
 BOOL PCClientDlg::EnableWindow(DWORD DlgId, BOOL bUsed)
@@ -221,39 +178,10 @@ BOOL PCClientDlg::EnableWindow(DWORD DlgId, BOOL bUsed)
 	return GetDlgItem(DlgId)->EnableWindow(bUsed);
 }
 
-BOOL socket_Select(SOCKET hSocket,DWORD nTimeOut,BOOL bRead)
-{
-	FD_SET fdset;
-	timeval tv;
-	FD_ZERO(&fdset);
-	FD_SET(hSocket,&fdset);
-	nTimeOut = nTimeOut > 1000 ? 1000 : nTimeOut;
-	tv.tv_sec = 0;
-	tv.tv_usec = nTimeOut;
-	int iRet = 0;
-	if (bRead)
-	{
-		iRet = select(0,&fdset,NULL,NULL,&tv);
-	} 
-	else
-	{
-		iRet = select(0,NULL,&fdset,NULL,&tv);
-	}
-	if (iRet <= 0)
-	{
-		return FALSE;
-	} 
-	else if (FD_ISSET(hSocket,&fdset))
-	{
-		return TRUE;
-	}
-	return FALSE;
-}
-
-void PCClientDlg::SetRevBoxText(CString strMsg)
+void PCClientDlg::SetRevBoxText(const std::string& msg)
 {
 	m_EditRevBox.SetSel(-1,-1);
-	m_EditRevBox.ReplaceSel(_T("\r\n  ") + strMsg + _T("\r\n"));
+	m_EditRevBox.ReplaceSel(_T("\r\n  ") + CString(msg.c_str()) + _T("\r\n"));
 }
 
 void PCClientDlg::OnBnClickedButtonstop()
@@ -262,7 +190,7 @@ void PCClientDlg::OnBnClickedButtonstop()
 	EnableWindow(IDC_BUTTONSEND,FALSE);
 	EnableWindow(IDC_BUTTONSTOP,FALSE);
 	closesocket(m_ClientSock);
-	isServerOn = FALSE;
+	m_ServerStatus = ServerStatus::OFF;
 }
 
 
@@ -283,9 +211,9 @@ void PCClientDlg::OnBnClickedButtonsend()
 	strcpy_s(szBuf,T2A(strGetMsg));
 	iWrite = send(m_ClientSock,szBuf,256,0);
 	if(SOCKET_ERROR == iWrite){
-		SetRevBoxText(_T("发送错误"));
+		SetRevBoxText("发送错误\r\n");
 	}
-	SetRevBoxText(_T("我自己 >>") + strGetMsg);
+	SetRevBoxText("我自己 >>" + std::string(CT2A(strGetMsg.GetString())));
 	SetDlgItemText(IDC_EDITSENDBOX,_T(""));
 	return; 
 }
@@ -294,7 +222,7 @@ void PCClientDlg::OnEnChangeEditsendbox()
 {
 	CString strMsg;
 	GetDlgItemText(IDC_EDITSENDBOX,strMsg);
-	if (_T("") == strMsg || !isServerOn)
+	if (_T("") == strMsg || m_ServerStatus == ServerStatus::OFF)
 	{
 		EnableWindow(IDC_BUTTONSEND,FALSE);
 	}

@@ -1,7 +1,5 @@
 #include "TcpServer.h"
 #include "ServerDlg.h"
-#include <thread>
-#include <functional>
 
 TcpServer::TcpServer(size_t port, void* parent) :
     mLisSock(INVALID_SOCKET)
@@ -108,7 +106,7 @@ void TcpServer::Stop()
  * @param bRead     indicates the flag of reading socket or writting socket;
  * @return fail or success.false fail.
  */
-bool TcpServer::Select(SOCKET socket, long nTimeOut, bool bRead)
+bool TcpServer::Select(SOCKET socket, long nTimeOut, MODE mode)
 {
     nTimeOut = nTimeOut > 1000 ? 1000 : nTimeOut;
     timeval time{ 0,nTimeOut };
@@ -118,25 +116,25 @@ bool TcpServer::Select(SOCKET socket, long nTimeOut, bool bRead)
     FD_SET(socket, &fdset);
 
     int ret = 0;
-    if (bRead)
+    if (MODE::READ == mode)
     {
         ret = select(0, &fdset, NULL, NULL, &time);
     }
-    else
+    else if(MODE::WRITE == mode)
     {
         ret = select(0, NULL, &fdset, NULL, &time);
     }
 
     if (ret <= 0)
     {
-        return FALSE;
+        return false;
     }
 
     if (!FD_ISSET(socket, &fdset))
     {
-        return FALSE;
+        return false;
     }
-    return TRUE;
+    return true;
 }
 
 /**
@@ -146,7 +144,7 @@ void TcpServer::SelectFunc()
 {
     while (IsRun())
     {
-        if (Select(GetSocket(),100,TRUE))
+        if (Select(GetSocket(),100,MODE::READ))
         {
             sockaddr_in cliAddr;
             int addLen = sizeof(sockaddr_in);
@@ -186,7 +184,7 @@ void TcpServer::ClientFunc(const CClientItem& client, void* pMainWin)
     PCServerDlg* pMainDlg = (PCServerDlg*)pMainWin;
     while (pMainDlg)
     {
-        if (Select(client.cSocket, 100, TRUE))
+        if (Select(client.cSocket, 100, MODE::READ))
         {
             char szRev[MAX_BUFF] = { 0 };
             int iRet = recv(client.cSocket, szRev, sizeof(szRev), 0);
