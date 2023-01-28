@@ -26,6 +26,11 @@ public:
 		this->cPort = rhs.cPort;
 		this->cSocket = rhs.cSocket;
 	}
+
+	bool operator==(const CClientItem& rhs)
+	{
+		return (this->cAddr == rhs.cAddr) && (cPort == rhs.cPort) && (cSocket == rhs.cSocket);
+	}
 	std::string	cAddr;						//客户端的IP
 	size_t		cPort;						//客户端的端口号
 	SOCKET		cSocket;					//客户端的Socket

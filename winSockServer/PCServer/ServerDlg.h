@@ -1,6 +1,7 @@
 #pragma once
 #include "afxwin.h"
 #include "ClientItem.h"
+#include "resource.h"
 
 CString GetTime();
 
@@ -38,7 +39,7 @@ public:
 	BOOL EnableWindow(DWORD DlgId, BOOL bUsed);
 	void SetRevBoxText(CString strMsg);
 	void RemoveClientFromArray(CClientItem in_item);
-	void SendClientMsg(CString strMsg,CClientItem * WhoseItem);
+	void SendClientMsg(const CString& strMsg,const CClientItem * WhoseItem);
 	BOOL TrayMyIcon(BOOL isAdd);
 
 	UINT	m_ServicePort;

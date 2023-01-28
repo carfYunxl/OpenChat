@@ -210,7 +210,7 @@ void PCServerDlg::OnBnClickedButtonquit()
 	SendMessage(WM_CLOSE);
 }
 
-void PCServerDlg::SendClientMsg(CString strMsg,CClientItem * pWhoseItem)
+void PCServerDlg::SendClientMsg(const CString& strMsg,const CClientItem * pWhoseItem)
 {
 	USES_CONVERSION;
 	char szBuf[256] = {0};

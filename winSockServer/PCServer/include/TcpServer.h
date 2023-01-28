@@ -15,13 +15,12 @@
 
 constexpr size_t MAX_BUFF = 256;
 
-class PCServerDlg;
 class TcpServer
 {
     using size_t = unsigned int;
     using cItem = std::vector<CClientItem>;
 public:
-    TcpServer(size_t port, PCServerDlg* parent);
+    TcpServer(size_t port, void* parent);
 
     void Start();
     void Stop();
@@ -44,23 +43,23 @@ public:
 
     CClientItem GetClient(size_t cIndex) { return mConVec.at(cIndex); }
 
+    void SelectFunc();
+
+    void ClientFunc(const CClientItem& client,void* pMainWin);
 private:
     SOCKET  mLisSock;       //监听Socket
     size_t  mPort;          //服务器端口
     BOOL    mRun;           //server是否在工作
     cItem   mConVec;        //保存所有连接上的ClientItem
 
-    PCServerDlg* mpMainWind;
+    void*   mpMainWind;
 
 private:
-    BOOL    Init();
+    bool    Init();
     void    UnInit();
 };
 
-UINT SelectFunc(LPVOID Lparam);
-UINT CliFunc(LPVOID Lparam);
-
-BOOL Select(SOCKET hSocket, DWORD nTimeOut, BOOL bRead);
+bool Select(SOCKET hSocket, DWORD nTimeOut, BOOL bRead);
 
 #endif //TCP_SERVER_H_
 
