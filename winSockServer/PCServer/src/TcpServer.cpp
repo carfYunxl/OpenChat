@@ -1,7 +1,9 @@
 #include "TcpServer.h"
 #include "ServerDlg.h"
+#include <thread>
+#include <functional>
 
-TcpServer::TcpServer(size_t port, PCServerDlg* parent) :
+TcpServer::TcpServer(size_t port, void* parent) :
     mLisSock(INVALID_SOCKET)
     , mPort(port)
     , mRun(FALSE)
@@ -9,7 +11,7 @@ TcpServer::TcpServer(size_t port, PCServerDlg* parent) :
 {
 }
 
-BOOL TcpServer::Init()
+bool TcpServer::Init()
 {
     //create a listen socket
     mLisSock = socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
@@ -71,7 +73,8 @@ void TcpServer::Start()
 {
     if (Init())
     {
-        AfxBeginThread(SelectFunc,this);
+        std::thread serThread(std::bind(&TcpServer::SelectFunc,this));
+        serThread.detach();
     }
 }
 
@@ -89,7 +92,7 @@ void TcpServer::Stop()
  * \param bRead     indicate read or write
  * \return 
  */
-BOOL Select(SOCKET hSocket, DWORD nTimeOut, BOOL bRead)
+bool Select(SOCKET hSocket, DWORD nTimeOut, BOOL bRead)
 {
     nTimeOut = nTimeOut > 1000 ? 1000 : nTimeOut;
     timeval time{ 0,nTimeOut };
@@ -126,54 +129,62 @@ BOOL Select(SOCKET hSocket, DWORD nTimeOut, BOOL bRead)
  * \param Lparam
  * \return 
  */
-UINT SelectFunc(LPVOID Lparam)
+void TcpServer::SelectFunc()
 {
-    TcpServer* server = (TcpServer*)Lparam;
-    while (server && server->IsRun())
+    while (IsRun())
     {
-        if (Select(server->GetSocket(),100,TRUE))
+        if (Select(GetSocket(),100,TRUE))
         {
             sockaddr_in cliAddr;
             int addLen = sizeof(sockaddr_in);
 
-            SOCKET connSock = accept(server->GetSocket(),(sockaddr*)&cliAddr,&addLen);
+            SOCKET connSock = accept(GetSocket(),(sockaddr*)&cliAddr,&addLen);
             if (connSock == INVALID_SOCKET)
             {
                 continue;
             }
 
-            server->PushConInfo(cliAddr,connSock);
+            PushConInfo(cliAddr,connSock);
 
-            //启动另一个线程，来监听当前客户端的消息 
-            AfxBeginThread(CliFunc,&server->GetClient(server->ClientNum()-1));
+            std::thread client_thread
+            (
+                std::bind
+                (
+                    &TcpServer::ClientFunc,
+                    this,
+                    GetClient(ClientNum()-1),
+                    mpMainWind
+                )
+            );
+
+            client_thread.detach();
         }
     }
-    return 0;
 }
 
-UINT CliFunc(LPVOID Lparam)
+void TcpServer::ClientFunc(const CClientItem& client, void* pMainWin)
 {
-    CClientItem* client = (CClientItem*)Lparam;
-    while (client)
+    PCServerDlg* pMainDlg = (PCServerDlg*)pMainWin;
+    while (pMainDlg)
     {
-        if (Select(client->cSocket, 100, TRUE))
+        if (Select(client.cSocket, 100, TRUE))
         {
             char szRev[MAX_BUFF] = { 0 };
-            int iRet = recv(client->cSocket, szRev, sizeof(szRev), 0);
+            int iRet = recv(client.cSocket, szRev, sizeof(szRev), 0);
+            CString strMsg;
             if (iRet > 0)
             {
-                //USES_CONVERSION;
-                //CString strMsg = A2T(szRev); //中文出现乱码，英文正常
-                //mpMainWind->SetRevBoxText(ClientItem.cAddr + _T(">>") + strMsg);
-                //mpMainWind->SendClientMsg(strMsg,&ClientItem);
+                USES_CONVERSION;
+                strMsg = A2T(szRev); //中文出现乱码，英文正常
+                pMainDlg->SetRevBoxText(CString(client.cAddr.c_str()) + _T(">>") + strMsg);
+                pMainDlg->SendClientMsg(strMsg,&client);
             }
             else {
-                //strMsg = ClientItem.cAddr + _T(" 已离开");
-                //ClientItem.m_pMainWnd->RemoveClientFromArray(ClientItem);
-                //ClientItem.m_pMainWnd->SetRevBoxText(strMsg);
+                strMsg = CString(client.cAddr.c_str()) + _T(" 已离开");
+                pMainDlg->RemoveClientFromArray(client);
+                pMainDlg->SetRevBoxText(strMsg);
                 break;
             }
         }
     }
-    return 0;
 }

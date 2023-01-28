@@ -6,18 +6,18 @@
 #define new DEBUG_NEW
 #endif
 
-BEGIN_MESSAGE_MAP(Cxads_PCServerApp, CWinApp)
+BEGIN_MESSAGE_MAP(PCServerApp, CWinApp)
 	ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
-Cxads_PCServerApp::Cxads_PCServerApp()
+PCServerApp::PCServerApp()
 {
 	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_RESTART;
 }
 
-Cxads_PCServerApp theApp;
+PCServerApp theApp;
 
-BOOL Cxads_PCServerApp::InitInstance()
+BOOL PCServerApp::InitInstance()
 {
 	INITCOMMONCONTROLSEX InitCtrls;
 	InitCtrls.dwSize = sizeof(InitCtrls);
