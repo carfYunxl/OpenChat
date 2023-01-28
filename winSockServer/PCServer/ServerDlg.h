@@ -3,8 +3,6 @@
 #include "ClientItem.h"
 #include "resource.h"
 
-CString GetTime();
-
 class TcpServer;
 class PCServerDlg : public CDialogEx
 {
@@ -19,11 +17,9 @@ protected:
 
 	HICON m_hIcon;
 
-	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	afx_msg void OnBnClickedButtonend();
-	afx_msg void OnBnClickedButtonquit();
 	afx_msg void OnBnClickedButtonsend();
 	afx_msg void OnEnChangeEditsendbox();
 	afx_msg void OnBnClickedButtonhide();

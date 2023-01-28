@@ -81,7 +81,6 @@ BOOL PCClientDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);
 	SetIcon(m_hIcon, FALSE);
 
-	// TODO: 在此添加额外的初始化代码
 	SetDlgItemText(IDC_IPADDRESS,_T("127.0.0.1"));
 	SetDlgItemText(IDC_EDITPORT,_T("8888"));
 	::HideCaret(GetDlgItem(IDC_EDITREVBOX)->GetSafeHwnd());
@@ -129,7 +128,6 @@ HCURSOR PCClientDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
 }
-
 
 
 void PCClientDlg::OnBnClickedButtonconnect()
@@ -255,17 +253,7 @@ BOOL socket_Select(SOCKET hSocket,DWORD nTimeOut,BOOL bRead)
 void PCClientDlg::SetRevBoxText(CString strMsg)
 {
 	m_EditRevBox.SetSel(-1,-1);
-	m_EditRevBox.ReplaceSel(GetTime() + _T("\r\n  ") + strMsg + _T("\r\n"));
-}
-
-CString GetTime()
-{
-	SYSTEMTIME time;
-	CString strTime;
-	GetLocalTime(&time);
-	strTime.Format(_T("%d%02d%02d %02d:%02d"),time.wYear,time.wMonth,time.wDay,
-		time.wHour,time.wMinute);
-	return strTime;
+	m_EditRevBox.ReplaceSel(_T("\r\n  ") + strMsg + _T("\r\n"));
 }
 
 void PCClientDlg::OnBnClickedButtonstop()

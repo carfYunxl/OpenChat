@@ -24,12 +24,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-
     <ClInclude Include="Client.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="ClientDlg.h">
-
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
@@ -41,17 +39,21 @@
     <ClInclude Include="Resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="include\TcpClient.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-
     <ClCompile Include="Client.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="ClientDlg.cpp">
-
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TcpClient.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

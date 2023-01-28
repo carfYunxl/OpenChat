@@ -16,7 +16,7 @@ public:
 	enum { IDD = IDD_ABOUTBOX };
 
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
+	virtual void DoDataExchange(CDataExchange* pDX);
 
 protected:
 	DECLARE_MESSAGE_MAP()
@@ -59,7 +59,6 @@ BEGIN_MESSAGE_MAP(PCServerDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTONSTART, &PCServerDlg::OnBnClickedButtonstart)
 	ON_BN_CLICKED(IDC_BUTTONEND, &PCServerDlg::OnBnClickedButtonend)
-	ON_BN_CLICKED(IDC_BUTTONQUIT, &PCServerDlg::OnBnClickedButtonquit)
 	ON_BN_CLICKED(IDC_BUTTONSEND, &PCServerDlg::OnBnClickedButtonsend)
 	ON_EN_CHANGE(IDC_EDITSENDBOX, &PCServerDlg::OnEnChangeEditsendbox)
 	ON_MESSAGE(WM_TRAYICON_SERVER,OnTrayCallbackMsg)
@@ -100,19 +99,6 @@ BOOL PCServerDlg::OnInitDialog()
 	GetDlgItem(IDC_EDITPORT)->SetFocus();
 
 	return TRUE; 
-}
-
-void PCServerDlg::OnSysCommand(UINT nID, LPARAM lParam)
-{
-	if ((nID & 0xFFF0) == IDM_ABOUTBOX)
-	{
-		CAboutDlg dlgAbout;
-		dlgAbout.DoModal();
-	}
-	else
-	{
-		CDialogEx::OnSysCommand(nID, lParam);
-	}
 }
 
 void PCServerDlg::OnPaint()
@@ -189,21 +175,6 @@ void PCServerDlg::SetRevBoxText(const std::string& strMsg)
 {
 	m_EditRevBox.SetSel(-1,-1);
 	m_EditRevBox.ReplaceSel(CString(strMsg.c_str()));
-}
-
-CString GetTime()
-{
-	SYSTEMTIME time;
-	CString strTime;
-	GetLocalTime(&time);
-	strTime.Format(_T("%d%02d%02d %02d:%02d"),time.wYear,time.wMonth,time.wDay,
-		time.wHour,time.wMinute);
-	return strTime;
-}
-
-void PCServerDlg::OnBnClickedButtonquit()
-{
-	SendMessage(WM_CLOSE);
 }
 
 void PCServerDlg::SendClientMsg(const std::string& strMsg,const CClientItem * client)
@@ -297,9 +268,9 @@ LRESULT PCServerDlg::OnTrayCallbackMsg(WPARAM wparam , LPARAM lparam)
 	case WM_RBUTTONUP:
 		{
 			CPoint pt;
-			GetCursorPos(&pt); //获得鼠标点击的位置
+			GetCursorPos(&pt);
 			pMenu = mMenu.GetSubMenu(0);
-			SetForegroundWindow(); //不加本句则菜单弹出不消失
+			SetForegroundWindow();
 			pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON,pt.x,pt.y,this);
 			break;
 		}
@@ -316,7 +287,6 @@ LRESULT PCServerDlg::OnTrayCallbackMsg(WPARAM wparam , LPARAM lparam)
 	return NULL;
 }
 
-//点击隐藏按钮
 void PCServerDlg::OnBnClickedButtonhide()
 {
 	ShowWindow(SW_MINIMIZE);
@@ -324,7 +294,6 @@ void PCServerDlg::OnBnClickedButtonhide()
 	TrayMyIcon(TRUE);
 }
 
-//点击菜单上的显示
 void PCServerDlg::OnMenuShow()
 {
 	TrayMyIcon(FALSE);
@@ -332,14 +301,11 @@ void PCServerDlg::OnMenuShow()
 	SetForegroundWindow();
 }
 
-//点击菜单上退出
 void PCServerDlg::OnMenuQuit()
 {
 	TrayMyIcon(FALSE);
-	OnBnClickedButtonquit();
 }
 
-//点击菜单上打开/关闭服务器的选项
 void PCServerDlg::OnMenuServer()
 {
 	if (1)
@@ -353,11 +319,10 @@ void PCServerDlg::OnMenuServer()
 
 }
 
-//当窗口大小改变时发送该消息
 void PCServerDlg::OnSize(UINT nType, int cx, int cy)
 {
 	CDialogEx::OnSize(nType, cx, cy);
-	if (SIZE_MINIMIZED == nType) //若是最小化，则隐藏到托盘
+	if (SIZE_MINIMIZED == nType)
 	{
 		ShowWindow(SW_MINIMIZE);
 		Sleep(200);
