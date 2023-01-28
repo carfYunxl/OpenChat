@@ -37,8 +37,8 @@ protected:
 
 public:
 	BOOL EnableWindow(DWORD DlgId, BOOL bUsed);
-	void SetRevBoxText(CString strMsg);
-	void SendClientMsg(const CString& strMsg,const CClientItem * client);
+	void SetRevBoxText(const std::string& strMsg);
+	void SendClientMsg(const std::string& strMsg,const CClientItem * client);
 	BOOL TrayMyIcon(BOOL isAdd);
 private:
 	LRESULT OnTrayCallbackMsg(WPARAM wparam , LPARAM lparam);

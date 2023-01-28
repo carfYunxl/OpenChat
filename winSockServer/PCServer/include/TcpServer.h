@@ -1,9 +1,9 @@
 /*****************************************************************//**
- * \file   TcpServer.h
- * \brief  this class is a easy use class to create a Tcp server on win32.
+ * @file   TcpServer.h
+ * @brief  this class is a easy use class to create a Tcp server on win32.
  * 
- * \author yxl
- * \date   January 2023
+ * @author yxl
+ * @date   January 2023
  *********************************************************************/
 #ifndef TCP_SERVER_H_
 

@@ -190,18 +190,14 @@ void TcpServer::ClientFunc(const CClientItem& client, void* pMainWin)
         {
             char szRev[MAX_BUFF] = { 0 };
             int iRet = recv(client.cSocket, szRev, sizeof(szRev), 0);
-            CString strMsg;
             if (iRet > 0)
             {
-                USES_CONVERSION;
-                strMsg = A2T(szRev); //中文出现乱码，英文正常
-                pMainDlg->SetRevBoxText(CString(client.cAddr.c_str()) + _T(">>") + strMsg);
-                pMainDlg->SendClientMsg(strMsg,&client);
+                pMainDlg->SetRevBoxText(client.cAddr + ">>" + std::string(szRev) + "\r\n");
+                pMainDlg->SendClientMsg(std::string(szRev) + "\r\n",&client);
             }
             else {
-                strMsg = CString(client.cAddr.c_str()) + _T(" 已离开");
                 DeleteClient(client.cPort);
-                pMainDlg->SetRevBoxText(strMsg);
+                pMainDlg->SetRevBoxText(client.cAddr + " 已离开\r\n");
                 break;
             }
         }

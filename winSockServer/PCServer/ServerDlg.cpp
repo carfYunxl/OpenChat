@@ -171,7 +171,7 @@ void PCServerDlg::OnBnClickedButtonstart()
 	EnableWindow(IDC_BUTTONSTART, FALSE);
 	EnableWindow(IDC_BUTTONEND, TRUE);
 
-	SetRevBoxText(_T("服务器已开启！"));
+	SetRevBoxText("服务器已开启！\r\n");
 }
 
 void PCServerDlg::OnBnClickedButtonend()
@@ -181,13 +181,14 @@ void PCServerDlg::OnBnClickedButtonend()
 	EnableWindow(IDC_BUTTONSEND,FALSE);
 	EnableWindow(IDC_BUTTONSTART,TRUE);
 	EnableWindow(IDC_BUTTONEND,FALSE);
-	SetRevBoxText(_T("停止监听端口"));
+	SetRevBoxText("服务器已关闭！\r\n");
 }
 
 //设置文本框文本
-void PCServerDlg::SetRevBoxText(CString strMsg){
+void PCServerDlg::SetRevBoxText(const std::string& strMsg)
+{
 	m_EditRevBox.SetSel(-1,-1);
-	m_EditRevBox.ReplaceSel(GetTime() + _T("\r\n  ") + strMsg + _T("\r\n"));
+	m_EditRevBox.ReplaceSel(CString(strMsg.c_str()));
 }
 
 CString GetTime()
@@ -205,41 +206,33 @@ void PCServerDlg::OnBnClickedButtonquit()
 	SendMessage(WM_CLOSE);
 }
 
-void PCServerDlg::SendClientMsg(const CString& strMsg,const CClientItem * client)
+void PCServerDlg::SendClientMsg(const std::string& strMsg,const CClientItem * client)
 {
-	USES_CONVERSION;
-	char szBuf[256] = {0};
-	strcpy_s(szBuf,256,T2A(strMsg));
-
 	int ret = 0;
 	if (client == NULL)
 	{
 		for (size_t i = 0;i < m_Server->ClientNum();++i)
 		{
-			ret &= send(m_Server->GetClient(i).cSocket, szBuf, 256, 0);
+			ret &= send(m_Server->GetClient(i).cSocket, strMsg.c_str(), 256, 0);
 		}
 	}
 	else
 	{
-		ret = send(client->cSocket, szBuf, 256, 0);
+		ret = send(client->cSocket, strMsg.c_str(), 256, 0);
 	}
 
 	if (SOCKET_ERROR == ret)
 	{
-		SetRevBoxText(_T("发送错误"));
+		SetRevBoxText("发送错误!\r\n");
 	}
 }
 
 void PCServerDlg::OnBnClickedButtonsend()
 {
-	CString strSerPort;
-	strSerPort.Format(_T("[Server : %d]:\n"), m_ServerPort);
-
 	CString strMsg;
 	GetDlgItemText(IDC_EDITSENDBOX,strMsg);
-	SendClientMsg(strSerPort + strMsg,NULL);
-
-	SetRevBoxText(strSerPort + strMsg);
+	SendClientMsg(std::string(CT2A(strMsg.GetString())) + " " + std::to_string(GetDlgItemInt(IDC_EDITPORT)) + "\r\n", NULL);
+	SetRevBoxText("我:" + std::to_string(GetDlgItemInt(IDC_EDITPORT)) + " >> " + std::string(CT2A(strMsg.GetString())) + "\r\n");
 	SetDlgItemText(IDC_EDITSENDBOX,_T(""));
 }
 
