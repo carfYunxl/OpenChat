@@ -11,14 +11,14 @@
 #include "resource.h"		// 主符号
 
 
-// Cxads_PCClientApp:
+// PCClientApp:
 // 有关此类的实现，请参阅 xads_PCClient.cpp
 //
 
-class Cxads_PCClientApp : public CWinApp
+class PCClientApp : public CWinApp
 {
 public:
-	Cxads_PCClientApp();
+	PCClientApp();
 
 // 重写
 public:
@@ -29,4 +29,4 @@ public:
 	DECLARE_MESSAGE_MAP()
 };
 
-extern Cxads_PCClientApp theApp;
+extern PCClientApp theApp;

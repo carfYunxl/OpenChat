@@ -38,15 +38,12 @@ protected:
 public:
 	BOOL EnableWindow(DWORD DlgId, BOOL bUsed);
 	void SetRevBoxText(CString strMsg);
-	void RemoveClientFromArray(CClientItem in_item);
-	void SendClientMsg(const CString& strMsg,const CClientItem * WhoseItem);
+	void SendClientMsg(const CString& strMsg,const CClientItem * client);
 	BOOL TrayMyIcon(BOOL isAdd);
-
-	UINT	m_ServicePort;
-	CEdit	m_EditRevBox;
 private:
-	BOOL	equal(const CClientItem *p1 , const CClientItem * p2);
 	LRESULT OnTrayCallbackMsg(WPARAM wparam , LPARAM lparam);
 private:
-	TcpServer* mServer;
+	TcpServer*	m_Server;
+	size_t		m_ServerPort;
+	CEdit		m_EditRevBox;
 };

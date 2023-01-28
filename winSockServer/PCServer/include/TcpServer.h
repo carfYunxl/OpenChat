@@ -1,6 +1,6 @@
 /*****************************************************************//**
  * \file   TcpServer.h
- * \brief  this class is a easy use class to create a Tcp server.
+ * \brief  this class is a easy use class to create a Tcp server on win32.
  * 
  * \author yxl
  * \date   January 2023
@@ -26,41 +26,33 @@ public:
     void Stop();
 
     SOCKET  GetSocket() { return mLisSock; }
-
-    void    PushConInfo
-    (
-        const sockaddr_in& cliAddr,
-        const SOCKET& connSock
-    )
+    void    AddClient(const sockaddr_in& cliAddr,const SOCKET& connSock)
     {
-        mConVec.emplace_back(inet_ntoa(cliAddr.sin_addr), ntohs(cliAddr.sin_port), connSock);
+        mClientVec.emplace_back(inet_ntoa(cliAddr.sin_addr), ntohs(cliAddr.sin_port), connSock);
     };
 
     BOOL    IsRun() { return mRun; }
     void    SetRun(BOOL run) { mRun = run; }
     void    SetPort(size_t port) { mPort = port; }
-    size_t  ClientNum() { return mConVec.size(); }
+    size_t  ClientNum() { return mClientVec.size(); }
+    void    SelectFunc();
+    void    ClientFunc(const CClientItem& client,void* pMainWin);
 
-    CClientItem GetClient(size_t cIndex) { return mConVec.at(cIndex); }
-
-    void SelectFunc();
-
-    void ClientFunc(const CClientItem& client,void* pMainWin);
+    CClientItem GetClient(size_t cIndex) { return mClientVec.at(cIndex); }
 private:
     SOCKET  mLisSock;       //监听Socket
     size_t  mPort;          //服务器端口
     BOOL    mRun;           //server是否在工作
-    cItem   mConVec;        //保存所有连接上的ClientItem
+    cItem   mClientVec;        //保存所有连接上的ClientItem
 
     void*   mpMainWind;
 
 private:
     bool    Init();
     void    UnInit();
+    bool    Select(SOCKET socket, long nTimeOut, bool bRead);
+    void    DeleteClient(size_t port);
 };
 
-bool Select(SOCKET hSocket, DWORD nTimeOut, BOOL bRead);
-
 #endif //TCP_SERVER_H_
-
 

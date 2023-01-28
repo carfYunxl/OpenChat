@@ -6,12 +6,12 @@
 #include "afxwin.h"
 
 
-// Cxads_PCClientDlg 对话框
-class Cxads_PCClientDlg : public CDialogEx
+// PCClientDlg 对话框
+class PCClientDlg : public CDialogEx
 {
 // 构造
 public:
-	Cxads_PCClientDlg(CWnd* pParent = NULL);	// 标准构造函数
+	PCClientDlg(CWnd* pParent = NULL);	// 标准构造函数
 
 // 对话框数据
 	enum { IDD = IDD_XADS_PCCLIENT_DIALOG };
@@ -32,7 +32,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnBnClickedButtonconnect();
-	BOOL ConnectSocket(Cxads_PCClientDlg *);
+	BOOL ConnectSocket(PCClientDlg *);
 	BOOL EnableWindow(DWORD DlgId, BOOL bUsed);
 	void SetRevBoxText(CString strMsg);
 

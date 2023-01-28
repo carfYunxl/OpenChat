@@ -31,34 +31,34 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
-Cxads_PCClientDlg::Cxads_PCClientDlg(CWnd* pParent /*=NULL*/)
-	: CDialogEx(Cxads_PCClientDlg::IDD, pParent)
+PCClientDlg::PCClientDlg(CWnd* pParent /*=NULL*/)
+	: CDialogEx(PCClientDlg::IDD, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	m_ClientSock = NULL;
 	isServerOn = FALSE;
 }
 
-void Cxads_PCClientDlg::DoDataExchange(CDataExchange* pDX)
+void PCClientDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_EDITREVBOX, m_EditRevBox);
 }
 
-BEGIN_MESSAGE_MAP(Cxads_PCClientDlg, CDialogEx)
+BEGIN_MESSAGE_MAP(PCClientDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-	ON_BN_CLICKED(IDC_BUTTONCONNECT, &Cxads_PCClientDlg::OnBnClickedButtonconnect)
-	ON_BN_CLICKED(IDC_BUTTONSTOP, &Cxads_PCClientDlg::OnBnClickedButtonstop)
-	ON_BN_CLICKED(IDC_BUTTONQUIT, &Cxads_PCClientDlg::OnBnClickedButtonquit)
-	ON_BN_CLICKED(IDC_BUTTONSEND, &Cxads_PCClientDlg::OnBnClickedButtonsend)
+	ON_BN_CLICKED(IDC_BUTTONCONNECT, &PCClientDlg::OnBnClickedButtonconnect)
+	ON_BN_CLICKED(IDC_BUTTONSTOP, &PCClientDlg::OnBnClickedButtonstop)
+	ON_BN_CLICKED(IDC_BUTTONQUIT, &PCClientDlg::OnBnClickedButtonquit)
+	ON_BN_CLICKED(IDC_BUTTONSEND, &PCClientDlg::OnBnClickedButtonsend)
 	ON_WM_SETFOCUS()
 	ON_WM_SETFOCUS()
-	ON_EN_CHANGE(IDC_EDITSENDBOX, &Cxads_PCClientDlg::OnEnChangeEditsendbox)
+	ON_EN_CHANGE(IDC_EDITSENDBOX, &PCClientDlg::OnEnChangeEditsendbox)
 END_MESSAGE_MAP()
 
-BOOL Cxads_PCClientDlg::OnInitDialog()
+BOOL PCClientDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
@@ -89,7 +89,7 @@ BOOL Cxads_PCClientDlg::OnInitDialog()
 	return TRUE;
 }
 
-void Cxads_PCClientDlg::OnSysCommand(UINT nID, LPARAM lParam)
+void PCClientDlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
 	if ((nID & 0xFFF0) == IDM_ABOUTBOX)
 	{
@@ -102,7 +102,7 @@ void Cxads_PCClientDlg::OnSysCommand(UINT nID, LPARAM lParam)
 	}
 }
 
-void Cxads_PCClientDlg::OnPaint()
+void PCClientDlg::OnPaint()
 {
 	if (IsIconic())
 	{
@@ -125,21 +125,21 @@ void Cxads_PCClientDlg::OnPaint()
 	}
 }
 
-HCURSOR Cxads_PCClientDlg::OnQueryDragIcon()
+HCURSOR PCClientDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
 
 
-void Cxads_PCClientDlg::OnBnClickedButtonconnect()
+void PCClientDlg::OnBnClickedButtonconnect()
 {
 	CreateThread(0,0,ConnectNetworkThread,this,0,NULL);
 }
 
 DWORD WINAPI ConnectNetworkThread(  LPVOID lpParameter)
 {
-	Cxads_PCClientDlg * pClient = (Cxads_PCClientDlg *)lpParameter;
+	PCClientDlg * pClient = (PCClientDlg *)lpParameter;
 	if(pClient->ConnectSocket(pClient))
 	{
 		
@@ -148,7 +148,7 @@ DWORD WINAPI ConnectNetworkThread(  LPVOID lpParameter)
 }
 
 #define MAX_BUFF 256
-BOOL Cxads_PCClientDlg::ConnectSocket(Cxads_PCClientDlg * pClient)
+BOOL PCClientDlg::ConnectSocket(PCClientDlg * pClient)
 {
 	m_ClientSock = socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
 	if (NULL == m_ClientSock)
@@ -159,7 +159,7 @@ BOOL Cxads_PCClientDlg::ConnectSocket(Cxads_PCClientDlg * pClient)
 	sockaddr_in sa;
 	sa.sin_family = AF_INET;
 	CString strIp;
-	DWORD dPort = GetDlgItemInt(IDC_EDITPORT);
+	UINT dPort = GetDlgItemInt(IDC_EDITPORT);
 	GetDlgItemText(IDC_IPADDRESS,strIp);
 	if (strIp == _T("0.0.0.0") || (dPort >= 65535 && dPort < 1024) || dPort == 0)
 	{
@@ -218,7 +218,7 @@ BOOL Cxads_PCClientDlg::ConnectSocket(Cxads_PCClientDlg * pClient)
 	return TRUE;
 }
 
-BOOL Cxads_PCClientDlg::EnableWindow(DWORD DlgId, BOOL bUsed)
+BOOL PCClientDlg::EnableWindow(DWORD DlgId, BOOL bUsed)
 {
 	return GetDlgItem(DlgId)->EnableWindow(bUsed);
 }
@@ -252,7 +252,7 @@ BOOL socket_Select(SOCKET hSocket,DWORD nTimeOut,BOOL bRead)
 	return FALSE;
 }
 
-void Cxads_PCClientDlg::SetRevBoxText(CString strMsg)
+void PCClientDlg::SetRevBoxText(CString strMsg)
 {
 	m_EditRevBox.SetSel(-1,-1);
 	m_EditRevBox.ReplaceSel(GetTime() + _T("\r\n  ") + strMsg + _T("\r\n"));
@@ -268,7 +268,7 @@ CString GetTime()
 	return strTime;
 }
 
-void Cxads_PCClientDlg::OnBnClickedButtonstop()
+void PCClientDlg::OnBnClickedButtonstop()
 {
 	EnableWindow(IDC_BUTTONCONNECT,TRUE);
 	EnableWindow(IDC_BUTTONSEND,FALSE);
@@ -278,14 +278,14 @@ void Cxads_PCClientDlg::OnBnClickedButtonstop()
 }
 
 
-void Cxads_PCClientDlg::OnBnClickedButtonquit()
+void PCClientDlg::OnBnClickedButtonquit()
 {
 	OnBnClickedButtonstop();
 	SendMessage(WM_CLOSE);
 }
 
 
-void Cxads_PCClientDlg::OnBnClickedButtonsend()
+void PCClientDlg::OnBnClickedButtonsend()
 {
 	USES_CONVERSION;
 	char szBuf[256] = {0};
@@ -302,7 +302,7 @@ void Cxads_PCClientDlg::OnBnClickedButtonsend()
 	return; 
 }
 
-void Cxads_PCClientDlg::OnEnChangeEditsendbox()
+void PCClientDlg::OnEnChangeEditsendbox()
 {
 	CString strMsg;
 	GetDlgItemText(IDC_EDITSENDBOX,strMsg);

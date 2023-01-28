@@ -6,18 +6,18 @@
 #define new DEBUG_NEW
 #endif
 
-BEGIN_MESSAGE_MAP(Cxads_PCClientApp, CWinApp)
+BEGIN_MESSAGE_MAP(PCClientApp, CWinApp)
 	ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
-Cxads_PCClientApp::Cxads_PCClientApp()
+PCClientApp::PCClientApp()
 {
 	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_RESTART;
 }
 
-Cxads_PCClientApp theApp;
+PCClientApp theApp;
 
-BOOL Cxads_PCClientApp::InitInstance()
+BOOL PCClientApp::InitInstance()
 {
 	INITCOMMONCONTROLSEX InitCtrls;
 	InitCtrls.dwSize = sizeof(InitCtrls);
@@ -39,7 +39,7 @@ BOOL Cxads_PCClientApp::InitInstance()
 	CShellManager *pShellManager = new CShellManager;
 	SetRegistryKey(_T("应用程序向导生成的本地应用程序"));
 
-	Cxads_PCClientDlg dlg;
+	PCClientDlg dlg;
 	m_pMainWnd = &dlg;
 	INT_PTR nResponse = dlg.DoModal();
 	if (nResponse == IDOK)

@@ -11,6 +11,11 @@ TcpServer::TcpServer(size_t port, void* parent) :
 {
 }
 
+/**
+ * @brief   server init,private member function.
+ * 
+ * @return fail or success.
+ */
 bool TcpServer::Init()
 {
     //create a listen socket
@@ -54,21 +59,29 @@ bool TcpServer::Init()
     return TRUE;
 }
 
+/**
+ * @brief   uninit the server.private member function.
+ * 
+ */
 void TcpServer::UnInit()
 {
-    mLisSock = INVALID_SOCKET;
-    mPort = 0;
-    mRun = FALSE;
-    mConVec.clear();
-
-    for (size_t i = 0;i < mConVec.size();++i)
+    for (size_t i = 0;i < mClientVec.size();++i)
     {
-        closesocket(mConVec.at(i).cSocket);
+        closesocket(mClientVec.at(i).cSocket);
     }
 
     closesocket(mLisSock);
+
+    mLisSock = INVALID_SOCKET;
+    mPort = 0;
+    mRun = FALSE;
+    mClientVec.clear();
 }
 
+/**
+ * @brief   start the server.after create a Tcp server,call this function,then the server will start.
+ * 
+ */
 void TcpServer::Start()
 {
     if (Init())
@@ -78,28 +91,31 @@ void TcpServer::Start()
     }
 }
 
-
+/**
+ * @brief   stop the server.if you when to stop the server,call this function directly.
+ * 
+ */
 void TcpServer::Stop()
 {
     UnInit();
 }
 
 /**
- * select the typical socket which hSocket means
+ * @brief the typical socket which hSocket means
  * 
- * \param hSocket   socket
- * \param nTimeOut  the time value of timeout
- * \param bRead     indicate read or write
- * \return 
+ * @param socket    is the handle of socket;
+ * @param nTimeOut  is the time value of timeout;
+ * @param bRead     indicates the flag of reading socket or writting socket;
+ * @return fail or success.false fail.
  */
-bool Select(SOCKET hSocket, DWORD nTimeOut, BOOL bRead)
+bool TcpServer::Select(SOCKET socket, long nTimeOut, bool bRead)
 {
     nTimeOut = nTimeOut > 1000 ? 1000 : nTimeOut;
     timeval time{ 0,nTimeOut };
 
     FD_SET fdset;
     FD_ZERO(&fdset);
-    FD_SET(hSocket, &fdset);
+    FD_SET(socket, &fdset);
 
     int ret = 0;
     if (bRead)
@@ -116,7 +132,7 @@ bool Select(SOCKET hSocket, DWORD nTimeOut, BOOL bRead)
         return FALSE;
     }
 
-    if (!FD_ISSET(hSocket, &fdset))
+    if (!FD_ISSET(socket, &fdset))
     {
         return FALSE;
     }
@@ -124,10 +140,7 @@ bool Select(SOCKET hSocket, DWORD nTimeOut, BOOL bRead)
 }
 
 /**
- * callback function to select the typical socket
- * 
- * \param Lparam
- * \return 
+ * @brief server thread function for selectting the typical socket to connect to the client.
  */
 void TcpServer::SelectFunc()
 {
@@ -144,7 +157,7 @@ void TcpServer::SelectFunc()
                 continue;
             }
 
-            PushConInfo(cliAddr,connSock);
+            AddClient(cliAddr,connSock);
 
             std::thread client_thread
             (
@@ -162,6 +175,12 @@ void TcpServer::SelectFunc()
     }
 }
 
+/**
+ * @brief client thread function for getting message from typical client socket.
+ * 
+ * @param client    is the client who connect to the server
+ * @param pMainWin  is the WinUI pointer to show the status.
+ */
 void TcpServer::ClientFunc(const CClientItem& client, void* pMainWin)
 {
     PCServerDlg* pMainDlg = (PCServerDlg*)pMainWin;
@@ -181,10 +200,22 @@ void TcpServer::ClientFunc(const CClientItem& client, void* pMainWin)
             }
             else {
                 strMsg = CString(client.cAddr.c_str()) + _T(" ÒÑÀë¿ª");
-                pMainDlg->RemoveClientFromArray(client);
+                DeleteClient(client.cPort);
                 pMainDlg->SetRevBoxText(strMsg);
                 break;
             }
+        }
+    }
+}
+
+void TcpServer::DeleteClient(size_t port)
+{
+    for (auto it = mClientVec.begin();it != mClientVec.end();++it)
+    {
+        if ((*it).cPort == port)
+        {
+            mClientVec.erase(it);
+            break;
         }
     }
 }

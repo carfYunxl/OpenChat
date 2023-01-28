@@ -36,15 +36,15 @@ END_MESSAGE_MAP()
 
 PCServerDlg::PCServerDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(PCServerDlg::IDD, pParent)
-	, m_ServicePort(0)
-	, mServer(new TcpServer(8888,this))
+	, m_ServerPort(0)
+	, m_Server(new TcpServer(8888,this))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
 PCServerDlg::~PCServerDlg()
 {
-	delete mServer;
+	delete m_Server;
 }
 
 void PCServerDlg::DoDataExchange(CDataExchange* pDX)
@@ -150,8 +150,8 @@ BOOL PCServerDlg::EnableWindow(DWORD DlgId, BOOL bUsed)
 
 void PCServerDlg::OnBnClickedButtonstart()
 {
-	m_ServicePort = GetDlgItemInt(IDC_EDITPORT);
-	if (m_ServicePort <= 1024 || m_ServicePort > 65535)
+	m_ServerPort = GetDlgItemInt(IDC_EDITPORT);
+	if (m_ServerPort <= 1024 || m_ServerPort > 65535)
 	{
 		AfxMessageBox(_T("请输入合适端口"));
 		SetDlgItemText(IDC_EDITPORT,_T(""));
@@ -161,11 +161,11 @@ void PCServerDlg::OnBnClickedButtonstart()
 	OnEnChangeEditsendbox();
 
 	CString strServerTitle;
-	strServerTitle.Format(_T("Server : %d"),m_ServicePort);
+	strServerTitle.Format(_T("Server : %d"), m_ServerPort);
 	SetWindowText(strServerTitle);
 
-	mServer->SetPort(GetDlgItemInt(IDC_EDITPORT));
-	mServer->Start();
+	m_Server->SetPort(GetDlgItemInt(IDC_EDITPORT));
+	m_Server->Start();
 
 	EnableWindow(IDC_BUTTONSEND, TRUE);
 	EnableWindow(IDC_BUTTONSTART, FALSE);
@@ -176,6 +176,8 @@ void PCServerDlg::OnBnClickedButtonstart()
 
 void PCServerDlg::OnBnClickedButtonend()
 {
+	m_Server->Stop();
+
 	EnableWindow(IDC_BUTTONSEND,FALSE);
 	EnableWindow(IDC_BUTTONSTART,TRUE);
 	EnableWindow(IDC_BUTTONEND,FALSE);
@@ -188,12 +190,6 @@ void PCServerDlg::SetRevBoxText(CString strMsg){
 	m_EditRevBox.ReplaceSel(GetTime() + _T("\r\n  ") + strMsg + _T("\r\n"));
 }
 
-//客户端下线，从链表移除该节点
-void PCServerDlg::RemoveClientFromArray(CClientItem in_item)
-{
-	return;
-}
-
 CString GetTime()
 {
 	SYSTEMTIME time;
@@ -204,35 +200,40 @@ CString GetTime()
 	return strTime;
 }
 
-//退出按钮
 void PCServerDlg::OnBnClickedButtonquit()
 {
 	SendMessage(WM_CLOSE);
 }
 
-void PCServerDlg::SendClientMsg(const CString& strMsg,const CClientItem * pWhoseItem)
+void PCServerDlg::SendClientMsg(const CString& strMsg,const CClientItem * client)
 {
 	USES_CONVERSION;
 	char szBuf[256] = {0};
 	strcpy_s(szBuf,256,T2A(strMsg));
-}
 
-BOOL PCServerDlg::equal(const CClientItem * p1 , const CClientItem * p2)
-{
-	if (p1->cSocket == p2->cSocket && p1->cAddr == p2->cAddr)
+	int ret = 0;
+	if (client == NULL)
 	{
-		return TRUE;
-	} 
+		for (size_t i = 0;i < m_Server->ClientNum();++i)
+		{
+			ret &= send(m_Server->GetClient(i).cSocket, szBuf, 256, 0);
+		}
+	}
 	else
 	{
-		return FALSE;
+		ret = send(client->cSocket, szBuf, 256, 0);
+	}
+
+	if (SOCKET_ERROR == ret)
+	{
+		SetRevBoxText(_T("发送错误"));
 	}
 }
 
 void PCServerDlg::OnBnClickedButtonsend()
 {
 	CString strSerPort;
-	strSerPort.Format(_T("[Server : %d]:\n"), m_ServicePort);
+	strSerPort.Format(_T("[Server : %d]:\n"), m_ServerPort);
 
 	CString strMsg;
 	GetDlgItemText(IDC_EDITSENDBOX,strMsg);
@@ -242,10 +243,6 @@ void PCServerDlg::OnBnClickedButtonsend()
 	SetDlgItemText(IDC_EDITSENDBOX,_T(""));
 }
 
-
-/**
-* 如果输入框有内容，就enable发送按钮
-*/
 void PCServerDlg::OnEnChangeEditsendbox()
 {
 	CString strMsg;
