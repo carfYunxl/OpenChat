@@ -84,7 +84,7 @@ void TcpServer::Start()
 {
     if (Init())
     {
-        std::thread serThread(std::bind(&TcpServer::SelectFunc,this));
+        std::thread serThread(std::bind(&TcpServer::SelectFunc,this,mpMainWind));
         serThread.detach();
     }
 }
@@ -140,8 +140,9 @@ bool TcpServer::Select(SOCKET socket, long nTimeOut, MODE mode)
 /**
  * @brief server thread function for selectting the typical socket to connect to the client.
  */
-void TcpServer::SelectFunc()
+void TcpServer::SelectFunc(void* pMainWin)
 {
+    PCServerDlg* pMainDlg = (PCServerDlg*)pMainWin;
     while (IsRun())
     {
         if (Select(GetSocket(),100,MODE::READ))
@@ -190,13 +191,13 @@ void TcpServer::ClientFunc(const CClientItem& client, void* pMainWin)
             int iRet = recv(client.cSocket, szRev, sizeof(szRev), 0);
             if (iRet > 0)
             {
-                pMainDlg->SetRevBoxText(client.cAddr + ">>" + std::string(szRev) + "\r\n");
+                pMainDlg->AddInfo(client.cAddr + ">>" + std::string(szRev) + "\r\n");
                 pMainDlg->SendClientMsg(std::string(szRev) + "\r\n",&client);
             }
             else
             {
                 DeleteClient(client.cPort);
-                pMainDlg->SetRevBoxText(client.cAddr + " 已离开\r\n");
+                pMainDlg->AddInfo(client.cAddr + " 已离开\r\n");
                 break;
             }
         }

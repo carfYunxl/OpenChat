@@ -34,7 +34,7 @@ public:
     void    SetRun(BOOL run) { mRun = run; }
     void    SetPort(size_t port) { mPort = port; }
     size_t  ClientNum() { return mClientVec.size(); }
-    void    SelectFunc();
+    void    SelectFunc(void* pMainWin);
     void    ClientFunc(const CClientItem& client,void* pMainWin);
 
     CClientItem GetClient(size_t cIndex) { return mClientVec.at(cIndex); }

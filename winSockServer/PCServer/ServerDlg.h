@@ -19,27 +19,23 @@ protected:
 
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
-	afx_msg void OnBnClickedButtonend();
-	afx_msg void OnBnClickedButtonsend();
-	afx_msg void OnEnChangeEditsendbox();
-	afx_msg void OnBnClickedButtonhide();
-	afx_msg void OnMenuShow();
-	afx_msg void OnMenuQuit();
-	afx_msg void OnMenuServer();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg void OnBnClickedButtonstart();
-
+	afx_msg void OnBnClickedMfcbuttonSend();
+	afx_msg void OnBnClickedMfcbuttonOpen();
+	afx_msg void OnBnClickedMfcbuttonClose();
+	afx_msg void OnEnChangeEditSend();
 	DECLARE_MESSAGE_MAP();
 
 public:
 	BOOL EnableWindow(DWORD DlgId, BOOL bUsed);
-	void SetRevBoxText(const std::string& strMsg);
+	void AddInfo(const std::string& strMsg);
 	void SendClientMsg(const std::string& strMsg,const CClientItem * client);
 	BOOL TrayMyIcon(BOOL isAdd);
-private:
-	LRESULT OnTrayCallbackMsg(WPARAM wparam , LPARAM lparam);
+	void InsertClient(const sockaddr_in& clientAddr);
 private:
 	TcpServer*	m_Server;
 	size_t		m_ServerPort;
-	CEdit		m_EditRevBox;
+	CListBox	mInfoBox;
+	CListCtrl	mClientList;
+	CEdit		mEditSend;
 };

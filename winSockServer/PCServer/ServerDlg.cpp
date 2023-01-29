@@ -50,23 +50,20 @@ PCServerDlg::~PCServerDlg()
 void PCServerDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_EDITGETBOX, m_EditRevBox);
+	DDX_Control(pDX, IDC_LIST_SHOW, mInfoBox);
+	DDX_Control(pDX, IDC_LIST_CLIENT_SHOW, mClientList);
+	DDX_Control(pDX, IDC_EDIT_SEND, mEditSend);
 }
 
 BEGIN_MESSAGE_MAP(PCServerDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-	ON_BN_CLICKED(IDC_BUTTONSTART, &PCServerDlg::OnBnClickedButtonstart)
-	ON_BN_CLICKED(IDC_BUTTONEND, &PCServerDlg::OnBnClickedButtonend)
-	ON_BN_CLICKED(IDC_BUTTONSEND, &PCServerDlg::OnBnClickedButtonsend)
-	ON_EN_CHANGE(IDC_EDITSENDBOX, &PCServerDlg::OnEnChangeEditsendbox)
-	ON_MESSAGE(WM_TRAYICON_SERVER,OnTrayCallbackMsg)
-	ON_BN_CLICKED(IDC_BUTTONHIDE, &PCServerDlg::OnBnClickedButtonhide)
-	ON_COMMAND(ID_MENU_SHOW, &PCServerDlg::OnMenuShow)
-	ON_COMMAND(ID_MENU_QUIT, &PCServerDlg::OnMenuQuit)
-	ON_COMMAND(ID_MENU_SERVER, &PCServerDlg::OnMenuServer)
 	ON_WM_SIZE()
+	ON_BN_CLICKED(IDC_MFCBUTTON_SEND, &PCServerDlg::OnBnClickedMfcbuttonSend)
+	ON_BN_CLICKED(IDC_MFCBUTTON_OPEN, &PCServerDlg::OnBnClickedMfcbuttonOpen)
+	ON_BN_CLICKED(IDC_MFCBUTTON_CLOSE, &PCServerDlg::OnBnClickedMfcbuttonClose)
+	ON_EN_CHANGE(IDC_EDIT_SEND, &PCServerDlg::OnEnChangeEditSend)
 END_MESSAGE_MAP()
 
 BOOL PCServerDlg::OnInitDialog()
@@ -93,10 +90,10 @@ BOOL PCServerDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);
 	SetIcon(m_hIcon, FALSE);
 
-	EnableWindow(IDC_BUTTONSEND,FALSE);
-	EnableWindow(IDC_BUTTONEND,FALSE);
-	SetDlgItemText(IDC_EDITPORT,_T("8888"));
-	GetDlgItem(IDC_EDITPORT)->SetFocus();
+	EnableWindow(IDC_MFCBUTTON_SEND,FALSE);
+	EnableWindow(IDC_MFCBUTTON_CLOSE,FALSE);
+	SetDlgItemText(IDC_EDIT_PORT,_T("8888"));
+	GetDlgItem(IDC_EDIT_PORT)->SetFocus();
 
 	return TRUE; 
 }
@@ -134,47 +131,10 @@ BOOL PCServerDlg::EnableWindow(DWORD DlgId, BOOL bUsed)
 	return GetDlgItem(DlgId)->EnableWindow(bUsed);
 }
 
-void PCServerDlg::OnBnClickedButtonstart()
-{
-	m_ServerPort = GetDlgItemInt(IDC_EDITPORT);
-	if (m_ServerPort <= 1024 || m_ServerPort > 65535)
-	{
-		AfxMessageBox(_T("请输入合适端口"));
-		SetDlgItemText(IDC_EDITPORT,_T(""));
-		GetDlgItem(IDC_EDITPORT)->SetFocus();
-		return ;
-	}
-	OnEnChangeEditsendbox();
-
-	CString strServerTitle;
-	strServerTitle.Format(_T("Server : %d"), m_ServerPort);
-	SetWindowText(strServerTitle);
-
-	m_Server->SetPort(GetDlgItemInt(IDC_EDITPORT));
-	m_Server->Start();
-
-	EnableWindow(IDC_BUTTONSEND, TRUE);
-	EnableWindow(IDC_BUTTONSTART, FALSE);
-	EnableWindow(IDC_BUTTONEND, TRUE);
-
-	SetRevBoxText("服务器已开启！\r\n");
-}
-
-void PCServerDlg::OnBnClickedButtonend()
-{
-	m_Server->Stop();
-
-	EnableWindow(IDC_BUTTONSEND,FALSE);
-	EnableWindow(IDC_BUTTONSTART,TRUE);
-	EnableWindow(IDC_BUTTONEND,FALSE);
-	SetRevBoxText("服务器已关闭！\r\n");
-}
-
 //设置文本框文本
-void PCServerDlg::SetRevBoxText(const std::string& strMsg)
+void PCServerDlg::AddInfo(const std::string& strMsg)
 {
-	m_EditRevBox.SetSel(-1,-1);
-	m_EditRevBox.ReplaceSel(CString(strMsg.c_str()));
+	mInfoBox.AddString(CString(strMsg.c_str()));
 }
 
 void PCServerDlg::SendClientMsg(const std::string& strMsg,const CClientItem * client)
@@ -194,29 +154,7 @@ void PCServerDlg::SendClientMsg(const std::string& strMsg,const CClientItem * cl
 
 	if (SOCKET_ERROR == ret)
 	{
-		SetRevBoxText("发送错误!\r\n");
-	}
-}
-
-void PCServerDlg::OnBnClickedButtonsend()
-{
-	CString strMsg;
-	GetDlgItemText(IDC_EDITSENDBOX,strMsg);
-	SendClientMsg(std::string(CT2A(strMsg.GetString())) + " " + std::to_string(GetDlgItemInt(IDC_EDITPORT)) + "\r\n", NULL);
-	SetRevBoxText("我:" + std::to_string(GetDlgItemInt(IDC_EDITPORT)) + " >> " + std::string(CT2A(strMsg.GetString())) + "\r\n");
-	SetDlgItemText(IDC_EDITSENDBOX,_T(""));
-}
-
-void PCServerDlg::OnEnChangeEditsendbox()
-{
-	CString strMsg;
-	GetDlgItemText(IDC_EDITSENDBOX,strMsg);
-	if (strMsg == _T(""))
-	{
-		EnableWindow(IDC_BUTTONSEND,FALSE);
-	}
-	else{
-		EnableWindow(IDC_BUTTONSEND,TRUE);
+		AddInfo("发送错误!\r\n");
 	}
 }
 
@@ -245,80 +183,6 @@ BOOL PCServerDlg::TrayMyIcon(BOOL isAdd)
 	return bReturn;
 }
 
-LRESULT PCServerDlg::OnTrayCallbackMsg(WPARAM wparam , LPARAM lparam)
-{
-	CBitmap IconBitmapOn;
-	CBitmap IconBitmapOff;
-	CMenu mMenu, * pMenu = NULL;
-	IconBitmapOn.LoadBitmap(IDB_BITMAPON);
-	IconBitmapOff.LoadBitmap(IDB_BITMAPOFF);
-	if (1)
-	{
-		mMenu.LoadMenu(IDR_MENU1);
-		mMenu.SetMenuItemBitmaps(ID_MENU_SERVER,MF_BYCOMMAND | MF_STRING | MF_ENABLED,&IconBitmapOff,&IconBitmapOn);
-		mMenu.ModifyMenu(ID_MENU_SERVER,MF_BYCOMMAND,ID_MENU_SERVER,_T("关闭服务器"));
-	} 
-	else
-	{
-		mMenu.LoadMenu(IDR_MENU1);
-		mMenu.SetMenuItemBitmaps(ID_MENU_SERVER,MF_BYCOMMAND | MF_STRING | MF_ENABLED,&IconBitmapOn,&IconBitmapOff);
-		mMenu.ModifyMenu(ID_MENU_SERVER,MF_BYCOMMAND,ID_MENU_SERVER,_T("打开服务器"));
-	}
-	switch(lparam){
-	case WM_RBUTTONUP:
-		{
-			CPoint pt;
-			GetCursorPos(&pt);
-			pMenu = mMenu.GetSubMenu(0);
-			SetForegroundWindow();
-			pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON,pt.x,pt.y,this);
-			break;
-		}
-	case WM_LBUTTONDBLCLK:
-		{
-			ShowWindow(SW_RESTORE);
-			SetForegroundWindow();
-			TrayMyIcon(FALSE);
-			break;
-		}
-	default:
-		break;
-	}
-	return NULL;
-}
-
-void PCServerDlg::OnBnClickedButtonhide()
-{
-	ShowWindow(SW_MINIMIZE);
-	Sleep(200);
-	TrayMyIcon(TRUE);
-}
-
-void PCServerDlg::OnMenuShow()
-{
-	TrayMyIcon(FALSE);
-	ShowWindow(SW_RESTORE);
-	SetForegroundWindow();
-}
-
-void PCServerDlg::OnMenuQuit()
-{
-	TrayMyIcon(FALSE);
-}
-
-void PCServerDlg::OnMenuServer()
-{
-	if (1)
-	{
-		OnBnClickedButtonend();
-	} 
-	else
-	{
-		OnBnClickedButtonstart();
-	}
-
-}
-
 void PCServerDlg::OnSize(UINT nType, int cx, int cy)
 {
 	CDialogEx::OnSize(nType, cx, cy);
@@ -328,4 +192,71 @@ void PCServerDlg::OnSize(UINT nType, int cx, int cy)
 		Sleep(200);
 		TrayMyIcon(TRUE);
 	}
+}
+
+
+void PCServerDlg::OnBnClickedMfcbuttonSend()
+{
+	CString strMsg;
+	GetDlgItemText(IDC_EDIT_SEND, strMsg);
+	SendClientMsg(std::string(CT2A(strMsg.GetString())) + " " + std::to_string(GetDlgItemInt(IDC_EDIT_PORT)) + "\r\n", NULL);
+	AddInfo("我:" + std::to_string(GetDlgItemInt(IDC_EDIT_PORT)) + " >> " + std::string(CT2A(strMsg.GetString())) + "\r\n");
+	SetDlgItemText(IDC_EDIT_SEND, _T(""));
+}
+
+
+void PCServerDlg::OnBnClickedMfcbuttonOpen()
+{
+	m_ServerPort = GetDlgItemInt(IDC_EDIT_PORT);
+	if (m_ServerPort <= 1024 || m_ServerPort > 65535)
+	{
+		AfxMessageBox(_T("请输入合适端口"));
+		SetDlgItemText(IDC_EDIT_PORT, _T(""));
+		GetDlgItem(IDC_EDIT_PORT)->SetFocus();
+		return;
+	}
+	//OnEnChangeEditsendbox();
+
+	CString strServerTitle;
+	strServerTitle.Format(_T("Server : %d"), m_ServerPort);
+	SetWindowText(strServerTitle);
+
+	m_Server->SetPort(GetDlgItemInt(IDC_EDIT_PORT));
+	m_Server->Start();
+
+	EnableWindow(IDC_MFCBUTTON_SEND, TRUE);
+	EnableWindow(IDC_MFCBUTTON_OPEN, FALSE);
+	EnableWindow(IDC_MFCBUTTON_CLOSE, TRUE);
+
+	AddInfo("服务器已开启！\r\n");
+}
+
+
+void PCServerDlg::OnBnClickedMfcbuttonClose()
+{
+	m_Server->Stop();
+
+	EnableWindow(IDC_MFCBUTTON_SEND, FALSE);
+	EnableWindow(IDC_MFCBUTTON_OPEN, TRUE);
+	EnableWindow(IDC_MFCBUTTON_CLOSE, FALSE);
+	AddInfo("服务器已关闭！\r\n");
+}
+
+void PCServerDlg::OnEnChangeEditSend()
+{
+	CString strMsg;
+	GetDlgItemText(IDC_EDIT_SEND, strMsg);
+	if (strMsg == _T(""))
+	{
+		EnableWindow(IDC_MFCBUTTON_CLOSE, FALSE);
+	}
+	else 
+	{
+		EnableWindow(IDC_MFCBUTTON_SEND, TRUE);
+	}
+}
+
+void PCServerDlg::InsertClient(const sockaddr_in& clientAddr)
+{
+
 }
