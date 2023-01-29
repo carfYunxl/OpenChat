@@ -42,7 +42,7 @@ private:
     SOCKET  mLisSock;       //监听Socket
     size_t  mPort;          //服务器端口
     BOOL    mRun;           //server是否在工作
-    cItem   mClientVec;        //保存所有连接上的ClientItem
+    cItem   mClientVec;     //保存所有连接上的ClientItem
 
     void*   mpMainWind;
 

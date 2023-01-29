@@ -95,6 +95,22 @@ BOOL PCServerDlg::OnInitDialog()
 	SetDlgItemText(IDC_EDIT_PORT,_T("8888"));
 	GetDlgItem(IDC_EDIT_PORT)->SetFocus();
 
+	LONG lStyle;
+	lStyle = GetWindowLong(mClientList.m_hWnd, GWL_STYLE);
+	lStyle &= ~LVS_TYPEMASK;
+	lStyle |= LVS_REPORT;
+	SetWindowLong(mClientList.m_hWnd,GWL_STYLE,lStyle);
+
+	DWORD dwStyle = mClientList.GetExtendedStyle();
+	dwStyle |= LVS_EX_FULLROWSELECT;
+	dwStyle |= LVS_EX_GRIDLINES;
+	//dwStyle |= LVS_EX_CHECKBOXES;
+	mClientList.SetExtendedStyle(dwStyle);
+
+	mClientList.InsertColumn(0, _T("Port"), LVCFMT_LEFT, 80);
+	mClientList.InsertColumn(1, _T("Ip"), LVCFMT_LEFT, 80);
+	mClientList.InsertColumn(2, _T("Socket"), LVCFMT_LEFT, 80);
+
 	return TRUE; 
 }
 
@@ -256,7 +272,34 @@ void PCServerDlg::OnEnChangeEditSend()
 	}
 }
 
-void PCServerDlg::InsertClient(const sockaddr_in& clientAddr)
+void PCServerDlg::InsertClient(const sockaddr_in& clientAddr, SOCKET socket)
 {
+	int nRow = mClientList.InsertItem(LVIF_TEXT | LVIF_PARAM, m_Server->ClientNum(),_T(""),0,0,0,0);
 
+	CString strPort;
+	strPort.Format(_T("%d"), ntohs(clientAddr.sin_port));
+
+	char szBuf[32];
+	CString strIp(inet_ntop(AF_INET,&clientAddr.sin_addr,szBuf,sizeof(szBuf)));
+
+	CString strSocket;
+	strSocket.Format(_T("%d"),socket);
+
+	mClientList.SetItemText(nRow, 0, strPort);
+	mClientList.SetItemText(nRow, 1, strIp);
+	mClientList.SetItemText(nRow, 2, strSocket);
+}
+
+void PCServerDlg::RemoveClient(const CClientItem& item)
+{
+	for (size_t i = 0;i < mClientList.GetItemCount();++i)
+	{
+		if(mClientList.GetItemText(i,0) == item.cPort && mClientList.GetItemText(i, 1) == CString(item.cAddr.c_str()))
+		{ 
+			mClientList.DeleteItem(i);
+			break;
+		}
+	}
+
+	Invalidate();
 }

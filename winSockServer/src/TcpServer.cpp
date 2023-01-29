@@ -147,16 +147,17 @@ void TcpServer::SelectFunc(void* pMainWin)
     {
         if (Select(GetSocket(),100,MODE::READ))
         {
-            sockaddr_in cliAddr;
+            sockaddr_in clientAddr;
             int addLen = sizeof(sockaddr_in);
 
-            SOCKET connSock = accept(GetSocket(),(sockaddr*)&cliAddr,&addLen);
+            SOCKET connSock = accept(GetSocket(),(sockaddr*)&clientAddr,&addLen);
             if (connSock == INVALID_SOCKET)
             {
                 continue;
             }
 
-            AddClient(cliAddr,connSock);
+            pMainDlg->InsertClient(clientAddr,connSock);
+            AddClient(clientAddr,connSock);
 
             std::thread client_thread
             (
@@ -196,6 +197,7 @@ void TcpServer::ClientFunc(const CClientItem& client, void* pMainWin)
             }
             else
             {
+                pMainDlg->RemoveClient(client);
                 DeleteClient(client.cPort);
                 pMainDlg->AddInfo(client.cAddr + " ТСАлїЄ\r\n");
                 break;

@@ -31,7 +31,8 @@ public:
 	void AddInfo(const std::string& strMsg);
 	void SendClientMsg(const std::string& strMsg,const CClientItem * client);
 	BOOL TrayMyIcon(BOOL isAdd);
-	void InsertClient(const sockaddr_in& clientAddr);
+	void InsertClient(const sockaddr_in& clientAddr,SOCKET socket);
+	void RemoveClient(const CClientItem& item);
 private:
 	TcpServer*	m_Server;
 	size_t		m_ServerPort;
