@@ -208,7 +208,7 @@ void PCClientDlg::OnBnClickedButtonsend()
 	int iWrite;
 	GetDlgItemText(IDC_EDITSENDBOX,strGetMsg);
 	strcpy_s(szBuf,T2A(strGetMsg));
-	iWrite = send(m_Client->GetSocket(),szBuf,256,0);
+	iWrite = send(m_Client->GetSocket(),szBuf,sizeof(szBuf),0);
 	if(SOCKET_ERROR == iWrite){
 		SetRevBoxText("·¢ËÍ´íÎó\r\n");
 	}

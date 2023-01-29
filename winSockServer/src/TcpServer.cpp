@@ -193,7 +193,8 @@ void TcpServer::ClientFunc(const CClientItem& client, void* pMainWin)
                 pMainDlg->SetRevBoxText(client.cAddr + ">>" + std::string(szRev) + "\r\n");
                 pMainDlg->SendClientMsg(std::string(szRev) + "\r\n",&client);
             }
-            else {
+            else
+            {
                 DeleteClient(client.cPort);
                 pMainDlg->SetRevBoxText(client.cAddr + " ТСАлїЄ\r\n");
                 break;

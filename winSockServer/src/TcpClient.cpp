@@ -61,7 +61,7 @@ void TcpClient::ClientFunc(void* pMainWin)
         if (Select(m_socket,100,MODE::READ))
         {
             char msg[BUF_SIZE] = { 0 };
-            size_t read = recv(m_socket, msg, BUF_SIZE, MSG_PEEK);
+            int read = recv(m_socket, msg, BUF_SIZE, 0);
             if (read > 0)
             {
                 pDlg->SetRevBoxText(m_ip + ">>" + std::string(msg));
@@ -111,11 +111,11 @@ bool TcpClient::Select(SOCKET socket, long timeOut, MODE mode)
         return false;
     }
 
-    if (!FD_ISSET(socket, &fdset))
+    if (FD_ISSET(socket, &fdset))
     {
-        return false;
+        return true;
     }
-    return true;
+    return false;
 }
 
 void TcpClient::SetPort(size_t port)

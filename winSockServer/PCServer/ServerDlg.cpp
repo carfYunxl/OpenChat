@@ -184,7 +184,7 @@ void PCServerDlg::SendClientMsg(const std::string& strMsg,const CClientItem * cl
 	{
 		for (size_t i = 0;i < m_Server->ClientNum();++i)
 		{
-			ret &= send(m_Server->GetClient(i).cSocket, strMsg.c_str(), 256, 0);
+			ret = send(m_Server->GetClient(i).cSocket, strMsg.c_str(), 256, 0);
 		}
 	}
 	else

@@ -21,7 +21,7 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	afx_msg void OnBnClickedButtonstop();
-	afx_msg void OnBnClickedButtonquit();
+	afx_msg void OnBnClickedButtonquit();                       
 	afx_msg void OnBnClickedButtonsend();
 	afx_msg void OnEnChangeEditsendbox();
 	afx_msg void OnBnClickedButtonconnect();
