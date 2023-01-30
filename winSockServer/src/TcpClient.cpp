@@ -64,11 +64,14 @@ void TcpClient::ClientFunc(void* pMainWin)
             int read = recv(m_socket, msg, BUF_SIZE, 0);
             if (read > 0)
             {
-                pDlg->SetRevBoxText(m_ip + ">>" + std::string(msg));
+                sockaddr_in connAddr;
+                int len = sizeof(connAddr);
+                getpeername(m_socket,(sockaddr*)&connAddr,&len);
+                pDlg->AddInfo(std::to_string(ntohs(connAddr.sin_port)) + " Say: " + std::string(msg));
             }
             else
             {
-                pDlg->SetRevBoxText("已断线，请重新连接\r\n");
+                pDlg->AddInfo("已断线，请重新连接");
                 pDlg->SetServerState(ServerStatus::OFF);
                 shutdown(m_socket, SD_BOTH);
                 break;

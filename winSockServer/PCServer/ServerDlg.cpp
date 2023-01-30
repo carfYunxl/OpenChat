@@ -60,10 +60,8 @@ BEGIN_MESSAGE_MAP(PCServerDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_WM_SIZE()
-	ON_BN_CLICKED(IDC_MFCBUTTON_SEND, &PCServerDlg::OnBnClickedMfcbuttonSend)
 	ON_BN_CLICKED(IDC_MFCBUTTON_OPEN, &PCServerDlg::OnBnClickedMfcbuttonOpen)
 	ON_BN_CLICKED(IDC_MFCBUTTON_CLOSE, &PCServerDlg::OnBnClickedMfcbuttonClose)
-	ON_EN_CHANGE(IDC_EDIT_SEND, &PCServerDlg::OnEnChangeEditSend)
 END_MESSAGE_MAP()
 
 BOOL PCServerDlg::OnInitDialog()
@@ -73,24 +71,9 @@ BOOL PCServerDlg::OnInitDialog()
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
 	ASSERT(IDM_ABOUTBOX < 0xF000);
 
-	CMenu* pSysMenu = GetSystemMenu(FALSE);
-	if (pSysMenu != NULL)
-	{
-		BOOL bNameValid;
-		CString strAboutMenu;
-		bNameValid = strAboutMenu.LoadString(IDS_ABOUTBOX);
-		ASSERT(bNameValid);
-		if (!strAboutMenu.IsEmpty())
-		{
-			pSysMenu->AppendMenu(MF_SEPARATOR);
-			pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
-		}
-	}
-
 	SetIcon(m_hIcon, TRUE);
 	SetIcon(m_hIcon, FALSE);
 
-	EnableWindow(IDC_MFCBUTTON_SEND,FALSE);
 	EnableWindow(IDC_MFCBUTTON_CLOSE,FALSE);
 	SetDlgItemText(IDC_EDIT_PORT,_T("8888"));
 	GetDlgItem(IDC_EDIT_PORT)->SetFocus();
@@ -104,7 +87,7 @@ BOOL PCServerDlg::OnInitDialog()
 	DWORD dwStyle = mClientList.GetExtendedStyle();
 	dwStyle |= LVS_EX_FULLROWSELECT;
 	dwStyle |= LVS_EX_GRIDLINES;
-	//dwStyle |= LVS_EX_CHECKBOXES;
+	dwStyle |= LVS_EX_CHECKBOXES;
 	mClientList.SetExtendedStyle(dwStyle);
 
 	mClientList.InsertColumn(0, _T("Port"), LVCFMT_LEFT, 80);
@@ -210,17 +193,6 @@ void PCServerDlg::OnSize(UINT nType, int cx, int cy)
 	}
 }
 
-
-void PCServerDlg::OnBnClickedMfcbuttonSend()
-{
-	CString strMsg;
-	GetDlgItemText(IDC_EDIT_SEND, strMsg);
-	SendClientMsg(std::string(CT2A(strMsg.GetString())) + " " + std::to_string(GetDlgItemInt(IDC_EDIT_PORT)) + "\r\n", NULL);
-	AddInfo("我:" + std::to_string(GetDlgItemInt(IDC_EDIT_PORT)) + " >> " + std::string(CT2A(strMsg.GetString())) + "\r\n");
-	SetDlgItemText(IDC_EDIT_SEND, _T(""));
-}
-
-
 void PCServerDlg::OnBnClickedMfcbuttonOpen()
 {
 	m_ServerPort = GetDlgItemInt(IDC_EDIT_PORT);
@@ -240,11 +212,10 @@ void PCServerDlg::OnBnClickedMfcbuttonOpen()
 	m_Server->SetPort(GetDlgItemInt(IDC_EDIT_PORT));
 	m_Server->Start();
 
-	EnableWindow(IDC_MFCBUTTON_SEND, TRUE);
 	EnableWindow(IDC_MFCBUTTON_OPEN, FALSE);
 	EnableWindow(IDC_MFCBUTTON_CLOSE, TRUE);
 
-	AddInfo("服务器已开启！\r\n");
+	AddInfo("[SYS] 服务器已开启！\r\n");
 }
 
 
@@ -252,24 +223,9 @@ void PCServerDlg::OnBnClickedMfcbuttonClose()
 {
 	m_Server->Stop();
 
-	EnableWindow(IDC_MFCBUTTON_SEND, FALSE);
 	EnableWindow(IDC_MFCBUTTON_OPEN, TRUE);
 	EnableWindow(IDC_MFCBUTTON_CLOSE, FALSE);
-	AddInfo("服务器已关闭！\r\n");
-}
-
-void PCServerDlg::OnEnChangeEditSend()
-{
-	CString strMsg;
-	GetDlgItemText(IDC_EDIT_SEND, strMsg);
-	if (strMsg == _T(""))
-	{
-		EnableWindow(IDC_MFCBUTTON_CLOSE, FALSE);
-	}
-	else 
-	{
-		EnableWindow(IDC_MFCBUTTON_SEND, TRUE);
-	}
+	AddInfo("[SYS] 服务器已关闭！\r\n");
 }
 
 void PCServerDlg::InsertClient(const sockaddr_in& clientAddr, SOCKET socket)
@@ -294,12 +250,46 @@ void PCServerDlg::RemoveClient(const CClientItem& item)
 {
 	for (size_t i = 0;i < mClientList.GetItemCount();++i)
 	{
-		if(mClientList.GetItemText(i,0) == item.cPort && mClientList.GetItemText(i, 1) == CString(item.cAddr.c_str()))
+		
+		if(_ttoi(mClientList.GetItemText(i, 0)) == item.cPort)
 		{ 
 			mClientList.DeleteItem(i);
 			break;
 		}
 	}
+}
 
-	Invalidate();
+
+BOOL PCServerDlg::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message == WM_KEYDOWN)
+	{
+		switch (pMsg->wParam)
+		{
+		case VK_ESCAPE:
+			return TRUE;
+			break;
+		case VK_RETURN:
+		{
+			CString strSend;
+			mEditSend.GetWindowText(strSend);
+
+			std::string str = CT2A(strSend.GetString());
+
+			for (size_t i = 0; i < mClientList.GetItemCount(); ++i)
+			{
+				if (mClientList.GetCheck(i))
+				{
+					SOCKET socket = _tcstoui64(mClientList.GetItemText(i, 2), NULL, 10);
+					int sendbyte = send(socket, str.c_str(), str.length(), 0);
+				}
+			}
+			mEditSend.SetWindowTextW(_T(""));
+			return TRUE;
+		}
+		break;
+		}
+	}
+
+	return CDialogEx::PreTranslateMessage(pMsg);
 }

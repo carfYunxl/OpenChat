@@ -48,20 +48,17 @@ PCClientDlg::~PCClientDlg()
 void PCClientDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_EDITREVBOX, m_EditRevBox);
+	DDX_Control(pDX, IDC_EDIT_SEND_BOX, mEditSend);
+	DDX_Control(pDX, IDC_LIST_INFO, mInfoBox);
 }
 
 BEGIN_MESSAGE_MAP(PCClientDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
-	ON_WM_QUERYDRAGICON()
-	ON_BN_CLICKED(IDC_BUTTONCONNECT, &PCClientDlg::OnBnClickedButtonconnect)
-	ON_BN_CLICKED(IDC_BUTTONSTOP, &PCClientDlg::OnBnClickedButtonstop)
-	ON_BN_CLICKED(IDC_BUTTONQUIT, &PCClientDlg::OnBnClickedButtonquit)
-	ON_BN_CLICKED(IDC_BUTTONSEND, &PCClientDlg::OnBnClickedButtonsend)
 	ON_WM_SETFOCUS()
 	ON_WM_SETFOCUS()
-	ON_EN_CHANGE(IDC_EDITSENDBOX, &PCClientDlg::OnEnChangeEditsendbox)
+	ON_BN_CLICKED(IDC_MFCBUTTON_CONNECT, &PCClientDlg::OnBnClickedMfcbuttonConnect)
+	ON_BN_CLICKED(IDC_MFCBUTTON_DISCONNECT, &PCClientDlg::OnBnClickedMfcbuttonDisconnect)
 END_MESSAGE_MAP()
 
 BOOL PCClientDlg::OnInitDialog()
@@ -86,10 +83,6 @@ BOOL PCClientDlg::OnInitDialog()
 
 	SetIcon(m_hIcon, TRUE);
 	SetIcon(m_hIcon, FALSE);
-
-	SetDlgItemText(IDC_IPADDRESS,_T("127.0.0.1"));
-	SetDlgItemText(IDC_EDITPORT,_T("8888"));
-	::HideCaret(GetDlgItem(IDC_EDITREVBOX)->GetSafeHwnd());
 
 	return TRUE;
 }
@@ -130,24 +123,22 @@ void PCClientDlg::OnPaint()
 	}
 }
 
-HCURSOR PCClientDlg::OnQueryDragIcon()
+BOOL PCClientDlg::EnableWindow(DWORD DlgId, BOOL bUsed)
 {
-	return static_cast<HCURSOR>(m_hIcon);
+	return GetDlgItem(DlgId)->EnableWindow(bUsed);
 }
 
-
-void PCClientDlg::OnBnClickedButtonconnect()
+void PCClientDlg::OnBnClickedMfcbuttonConnect()
 {
-	CString strIp;
 	UINT port = GetDlgItemInt(IDC_EDITPORT);
-	GetDlgItemText(IDC_IPADDRESS, strIp);
-	if (strIp == _T("0.0.0.0") || (port >= 65535 && port < 1024) || port == 0)
+	if ((port >= 65535 && port < 1024) || port == 0)
 	{
 		MessageBox(_T("请输入正确IP地址或端口"));
+		return;
 	}
 
 	m_Client->SetPort(port);
-	m_Client->SetIp(std::string(CT2A(strIp.GetString())));
+	m_Client->SetIp("127.0.0.1");
 
 	m_Client->Connect();
 
@@ -163,70 +154,47 @@ void PCClientDlg::OnBnClickedButtonconnect()
 	strCliTitle.Format(_T("Client : %d"), ntohs(cliAddr.sin_port));
 	SetWindowTextW(strCliTitle);
 
-	SetRevBoxText("连接服务器成功\r\n");
-	EnableWindow(IDC_BUTTONSTOP, TRUE);
-	EnableWindow(IDC_BUTTONCONNECT, FALSE);
+	mInfoBox.AddString(_T("连接服务器成功"));
+	EnableWindow(IDC_MFCBUTTON_DISCONNECT, TRUE);
+	EnableWindow(IDC_MFCBUTTON_CONNECT, FALSE);
 
 	m_ServerStatus = ServerStatus::ON;
-
-	OnEnChangeEditsendbox();
 }
 
-BOOL PCClientDlg::EnableWindow(DWORD DlgId, BOOL bUsed)
-{
-	return GetDlgItem(DlgId)->EnableWindow(bUsed);
-}
 
-void PCClientDlg::SetRevBoxText(const std::string& msg)
+void PCClientDlg::OnBnClickedMfcbuttonDisconnect()
 {
-	m_EditRevBox.SetSel(-1,-1);
-	m_EditRevBox.ReplaceSel(_T("\r\n  ") + CString(msg.c_str()) + _T("\r\n"));
-}
-
-void PCClientDlg::OnBnClickedButtonstop()
-{
-	EnableWindow(IDC_BUTTONCONNECT,TRUE);
-	EnableWindow(IDC_BUTTONSEND,FALSE);
-	EnableWindow(IDC_BUTTONSTOP,FALSE);
+	EnableWindow(IDC_MFCBUTTON_CONNECT, TRUE);
+	EnableWindow(IDC_MFCBUTTON_DISCONNECT, FALSE);
 	closesocket(m_Client->GetSocket());
+
 	m_ServerStatus = ServerStatus::OFF;
 }
 
-
-void PCClientDlg::OnBnClickedButtonquit()
+BOOL PCClientDlg::PreTranslateMessage(MSG* pMsg)
 {
-	OnBnClickedButtonstop();
-	SendMessage(WM_CLOSE);
+	if (pMsg->message == WM_KEYDOWN)
+	{
+		switch (pMsg->wParam)
+		{
+			case VK_ESCAPE:
+				return TRUE;
+			case VK_RETURN:
+			{
+				CString strSend;
+				mEditSend.GetWindowTextW(strSend);
+				std::string str = CT2A(strSend.GetString());
+				send(m_Client->GetSocket(), str.c_str(), str.length(), 0);
+				mEditSend.SetWindowTextW(_T(""));
+				return TRUE;
+			}
+		}
+	}
+
+	return CDialogEx::PreTranslateMessage(pMsg);
 }
 
-
-void PCClientDlg::OnBnClickedButtonsend()
+void PCClientDlg::AddInfo(const std::string& info)
 {
-	USES_CONVERSION;
-	char szBuf[256] = {0};
-	CString strGetMsg;
-	int iWrite;
-	GetDlgItemText(IDC_EDITSENDBOX,strGetMsg);
-	strcpy_s(szBuf,T2A(strGetMsg));
-	iWrite = send(m_Client->GetSocket(),szBuf,sizeof(szBuf),0);
-	if(SOCKET_ERROR == iWrite){
-		SetRevBoxText("发送错误\r\n");
-	}
-	SetRevBoxText("我自己 >>" + std::string(CT2A(strGetMsg.GetString())));
-	SetDlgItemText(IDC_EDITSENDBOX,_T(""));
-	return; 
-}
-
-void PCClientDlg::OnEnChangeEditsendbox()
-{
-	CString strMsg;
-	GetDlgItemText(IDC_EDITSENDBOX,strMsg);
-	if (_T("") == strMsg || m_ServerStatus == ServerStatus::OFF)
-	{
-		EnableWindow(IDC_BUTTONSEND,FALSE);
-	}
-	else 
-	{
-		EnableWindow(IDC_BUTTONSEND,TRUE);
-	}
+	mInfoBox.AddString(CString(info.c_str()));
 }

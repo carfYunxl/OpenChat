@@ -14,16 +14,15 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);
 	virtual BOOL OnInitDialog();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 	HICON m_hIcon;
 
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg void OnBnClickedMfcbuttonSend();
 	afx_msg void OnBnClickedMfcbuttonOpen();
 	afx_msg void OnBnClickedMfcbuttonClose();
-	afx_msg void OnEnChangeEditSend();
 	DECLARE_MESSAGE_MAP();
 
 public:

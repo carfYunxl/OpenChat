@@ -11,29 +11,24 @@ public:
 	~PCClientDlg();
 	enum { IDD = IDD_PCCLIENT_DIALOG };
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-
-protected:
 	HICON m_hIcon;
 
+	virtual void DoDataExchange(CDataExchange* pDX);
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual BOOL OnInitDialog();
+
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
-	afx_msg HCURSOR OnQueryDragIcon();
-	afx_msg void OnBnClickedButtonstop();
-	afx_msg void OnBnClickedButtonquit();                       
-	afx_msg void OnBnClickedButtonsend();
-	afx_msg void OnEnChangeEditsendbox();
-	afx_msg void OnBnClickedButtonconnect();
+	afx_msg void OnBnClickedMfcbuttonConnect();
+	afx_msg void OnBnClickedMfcbuttonDisconnect();
 	DECLARE_MESSAGE_MAP()
 public:
 	BOOL EnableWindow(DWORD DlgId, BOOL bUsed);
-	void SetRevBoxText(const std::string& msg);
-
 	void SetServerState(ServerStatus state) { m_ServerStatus = state; }
-
+	void AddInfo(const std::string& info);
 private:
 	ServerStatus	m_ServerStatus;
-	CEdit			m_EditRevBox;
 	TcpClient*		m_Client;
+	CEdit			mEditSend;
+	CListBox		mInfoBox;
 };
