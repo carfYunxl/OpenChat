@@ -21,12 +21,6 @@
     <None Include="res\PCServer.ico">
       <Filter>资源文件</Filter>
     </None>
-    <None Include="res\bitmap1.bmp">
-      <Filter>资源文件</Filter>
-    </None>
-    <None Include="res\bitmapon.bmp">
-      <Filter>资源文件</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Server.h">
@@ -72,5 +66,16 @@
     <ResourceCompile Include="PCServer.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\toolbar1.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\close.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\open.png">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -21,15 +21,15 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg void OnBnClickedMfcbuttonOpen();
-	afx_msg void OnBnClickedMfcbuttonClose();
+	afx_msg void OnBtn_1();
+	afx_msg void OnBtn_2();
+	afx_msg BOOL OnToolTipNotify(UINT id,NMHDR* pNMHDR,LRESULT* pResult);
 	DECLARE_MESSAGE_MAP();
 
 public:
 	BOOL EnableWindow(DWORD DlgId, BOOL bUsed);
 	void AddInfo(const std::string& strMsg);
 	void SendClientMsg(const std::string& strMsg,const CClientItem * client);
-	BOOL TrayMyIcon(BOOL isAdd);
 	void InsertClient(const sockaddr_in& clientAddr,SOCKET socket);
 	void RemoveClient(const CClientItem& item);
 private:
@@ -38,4 +38,6 @@ private:
 	CListBox	mInfoBox;
 	CListCtrl	mClientList;
 	CEdit		mEditSend;
+	CToolBar	mToolBar;
+	CImageList	mImageList;
 };

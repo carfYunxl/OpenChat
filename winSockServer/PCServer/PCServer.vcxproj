@@ -110,8 +110,6 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="res\bitmap1.bmp" />
-    <None Include="res\bitmapon.bmp" />
     <None Include="res\PCServer.ico" />
     <None Include="res\PCServer.rc2" />
   </ItemGroup>
@@ -136,6 +134,11 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PCServer.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\close.png" />
+    <Image Include="res\open.png" />
+    <Image Include="res\toolbar1.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

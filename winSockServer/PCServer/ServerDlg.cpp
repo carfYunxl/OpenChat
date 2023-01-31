@@ -60,8 +60,9 @@ BEGIN_MESSAGE_MAP(PCServerDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_WM_SIZE()
-	ON_BN_CLICKED(IDC_MFCBUTTON_OPEN, &PCServerDlg::OnBnClickedMfcbuttonOpen)
-	ON_BN_CLICKED(IDC_MFCBUTTON_CLOSE, &PCServerDlg::OnBnClickedMfcbuttonClose)
+	ON_COMMAND(ID_BUTTON_1, &OnBtn_1)
+	ON_COMMAND(ID_BUTTON_2, &OnBtn_2)
+	ON_NOTIFY_EX(TTN_NEEDTEXT,0, OnToolTipNotify)
 END_MESSAGE_MAP()
 
 BOOL PCServerDlg::OnInitDialog()
@@ -74,7 +75,6 @@ BOOL PCServerDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);
 	SetIcon(m_hIcon, FALSE);
 
-	EnableWindow(IDC_MFCBUTTON_CLOSE,FALSE);
 	SetDlgItemText(IDC_EDIT_PORT,_T("8888"));
 	GetDlgItem(IDC_EDIT_PORT)->SetFocus();
 
@@ -93,6 +93,25 @@ BOOL PCServerDlg::OnInitDialog()
 	mClientList.InsertColumn(0, _T("Port"), LVCFMT_LEFT, 80);
 	mClientList.InsertColumn(1, _T("Ip"), LVCFMT_LEFT, 80);
 	mClientList.InsertColumn(2, _T("Socket"), LVCFMT_LEFT, 80);
+
+	mToolBar.Create(this, WS_CHILD | WS_VISIBLE | CBRS_BOTTOM);
+	mToolBar.LoadToolBar(IDR_TOOLBAR_SERVER);
+	RepositionBars(AFX_IDW_CONTROLBAR_FIRST,AFX_IDW_CONTROLBAR_LAST,0);
+
+	mImageList.Create(48, 48, ILC_COLOR32 | ILC_MASK, 2, 2);
+	mImageList.SetBkColor(RGB(255, 255, 255));
+
+	CPngImage* pPngImage = new CPngImage();
+	pPngImage->Load(IDB_PNG_OPEN);
+	mImageList.Add(pPngImage, RGB(0, 0, 0));
+	pPngImage->DeleteObject();
+
+	CPngImage* pPngImage2 = new CPngImage();
+	pPngImage2->Load(IDB_PNG_CLOSE);
+	mImageList.Add(pPngImage2, RGB(0, 0, 0));
+	pPngImage2->DeleteObject();
+	mToolBar.GetToolBarCtrl().SetImageList(&mImageList);
+	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_2,FALSE);
 
 	return TRUE; 
 }
@@ -157,31 +176,6 @@ void PCServerDlg::SendClientMsg(const std::string& strMsg,const CClientItem * cl
 	}
 }
 
-BOOL PCServerDlg::TrayMyIcon(BOOL isAdd)
-{
-	BOOL bReturn = FALSE;
-	NOTIFYICONDATA tnd;
-	tnd.cbSize = sizeof(NOTIFYICONDATA);
-	tnd.hWnd = GetSafeHwnd();
-	tnd.uID = IDR_MAINFRAME;
-	if (TRUE == isAdd)
-	{
-		tnd.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
-		tnd.uCallbackMessage = WM_TRAYICON_SERVER;
-		tnd.hIcon = LoadIcon(AfxGetInstanceHandle(),MAKEINTRESOURCE(IDR_MAINFRAME));
-		wcscpy_s(tnd.szTip,_countof(tnd.szTip),L"WIFI通信 - 服务端");
-		ShowWindow(SW_HIDE);
-		bReturn = Shell_NotifyIcon(NIM_ADD,&tnd);
-	} 
-	else
-	{
-		ShowWindow(SW_SHOWNA);
-		SetForegroundWindow();
-		bReturn = Shell_NotifyIcon(NIM_DELETE,&tnd);
-	}
-	return bReturn;
-}
-
 void PCServerDlg::OnSize(UINT nType, int cx, int cy)
 {
 	CDialogEx::OnSize(nType, cx, cy);
@@ -189,43 +183,7 @@ void PCServerDlg::OnSize(UINT nType, int cx, int cy)
 	{
 		ShowWindow(SW_MINIMIZE);
 		Sleep(200);
-		TrayMyIcon(TRUE);
 	}
-}
-
-void PCServerDlg::OnBnClickedMfcbuttonOpen()
-{
-	m_ServerPort = GetDlgItemInt(IDC_EDIT_PORT);
-	if (m_ServerPort <= 1024 || m_ServerPort > 65535)
-	{
-		AfxMessageBox(_T("请输入合适端口"));
-		SetDlgItemText(IDC_EDIT_PORT, _T(""));
-		GetDlgItem(IDC_EDIT_PORT)->SetFocus();
-		return;
-	}
-	//OnEnChangeEditsendbox();
-
-	CString strServerTitle;
-	strServerTitle.Format(_T("Server : %d"), m_ServerPort);
-	SetWindowText(strServerTitle);
-
-	m_Server->SetPort(GetDlgItemInt(IDC_EDIT_PORT));
-	m_Server->Start();
-
-	EnableWindow(IDC_MFCBUTTON_OPEN, FALSE);
-	EnableWindow(IDC_MFCBUTTON_CLOSE, TRUE);
-
-	AddInfo("[SYS] 服务器已开启！\r\n");
-}
-
-
-void PCServerDlg::OnBnClickedMfcbuttonClose()
-{
-	m_Server->Stop();
-
-	EnableWindow(IDC_MFCBUTTON_OPEN, TRUE);
-	EnableWindow(IDC_MFCBUTTON_CLOSE, FALSE);
-	AddInfo("[SYS] 服务器已关闭！\r\n");
 }
 
 void PCServerDlg::InsertClient(const sockaddr_in& clientAddr, SOCKET socket)
@@ -292,4 +250,71 @@ BOOL PCServerDlg::PreTranslateMessage(MSG* pMsg)
 	}
 
 	return CDialogEx::PreTranslateMessage(pMsg);
+}
+
+void PCServerDlg::OnBtn_1()
+{
+	m_ServerPort = GetDlgItemInt(IDC_EDIT_PORT);
+	if (m_ServerPort <= 1024 || m_ServerPort > 65535)
+	{
+		AfxMessageBox(_T("请输入合适端口"));
+		SetDlgItemText(IDC_EDIT_PORT, _T(""));
+		GetDlgItem(IDC_EDIT_PORT)->SetFocus();
+		return;
+	}
+	//OnEnChangeEditsendbox();
+
+	CString strServerTitle;
+	strServerTitle.Format(_T("Server : %d"), m_ServerPort);
+	SetWindowText(strServerTitle);
+
+	m_Server->SetPort(GetDlgItemInt(IDC_EDIT_PORT));
+	m_Server->Start();
+
+	AddInfo("[SYS] 服务器已开启！\r\n");
+
+	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_1, FALSE);
+	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_2, TRUE);
+}
+
+void PCServerDlg::OnBtn_2()
+{
+	m_Server->Stop();
+	AddInfo("[SYS] 服务器已关闭！\r\n");
+
+	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_1, TRUE);
+	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_2, FALSE);
+}
+
+BOOL PCServerDlg::OnToolTipNotify(UINT id, NMHDR* pNMHDR, LRESULT* pResult)
+{
+	TOOLTIPTEXT* pTTT = (TOOLTIPTEXT*)pNMHDR;
+	CString str;
+
+	UINT nId = pNMHDR->idFrom;
+
+	if (nId)
+	{
+		nId = mToolBar.CommandToIndex(nId);
+		if (nId != -1)
+		{
+			switch(nId)
+			{
+				case 0:
+					pTTT->lpszText = _T("Open");
+					break;
+				case 1:
+					pTTT->lpszText = _T("Close");
+					break;
+				default:
+					pTTT->lpszText = _T("");
+					break;
+			}
+
+			pTTT->hinst = AfxGetResourceHandle();
+			return TRUE;
+		}
+	}
+
+	return FALSE;
 }
