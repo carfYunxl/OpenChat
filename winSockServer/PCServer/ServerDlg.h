@@ -3,6 +3,9 @@
 #include "ClientItem.h"
 #include "resource.h"
 
+constexpr size_t TOOLBAR_HEIGHT = 90;
+constexpr size_t CLIENT_LIST_WIDTH = 200;
+
 class TcpServer;
 class PCServerDlg : public CDialogEx
 {
@@ -40,4 +43,6 @@ private:
 	CEdit		mEditSend;
 	CToolBar	mToolBar;
 	CImageList	mImageList;
+private:
+	void InitToolBar();
 };

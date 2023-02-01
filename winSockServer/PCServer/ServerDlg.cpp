@@ -36,7 +36,7 @@ END_MESSAGE_MAP()
 
 PCServerDlg::PCServerDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(PCServerDlg::IDD, pParent)
-	, m_ServerPort(0)
+	, m_ServerPort(8888)
 	, m_Server(new TcpServer(8888,this))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -75,8 +75,7 @@ BOOL PCServerDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);
 	SetIcon(m_hIcon, FALSE);
 
-	SetDlgItemText(IDC_EDIT_PORT,_T("8888"));
-	GetDlgItem(IDC_EDIT_PORT)->SetFocus();
+	SetWindowText(_T("服务器：8888"));
 
 	LONG lStyle;
 	lStyle = GetWindowLong(mClientList.m_hWnd, GWL_STYLE);
@@ -90,29 +89,28 @@ BOOL PCServerDlg::OnInitDialog()
 	dwStyle |= LVS_EX_CHECKBOXES;
 	mClientList.SetExtendedStyle(dwStyle);
 
-	mClientList.InsertColumn(0, _T("Port"), LVCFMT_LEFT, 80);
-	mClientList.InsertColumn(1, _T("Ip"), LVCFMT_LEFT, 80);
-	mClientList.InsertColumn(2, _T("Socket"), LVCFMT_LEFT, 80);
+	mClientList.InsertColumn(0, _T("端口"),	LVCFMT_CENTER, 65);
+	mClientList.InsertColumn(1, _T("ip地址"), LVCFMT_CENTER, 65);
+	mClientList.InsertColumn(2, _T("套接字"), LVCFMT_CENTER, 65);
 
-	mToolBar.Create(this, WS_CHILD | WS_VISIBLE | CBRS_BOTTOM);
-	mToolBar.LoadToolBar(IDR_TOOLBAR_SERVER);
-	RepositionBars(AFX_IDW_CONTROLBAR_FIRST,AFX_IDW_CONTROLBAR_LAST,0);
+	CRect rect;
+	GetClientRect(rect);
+	mClientList.MoveWindow(rect.left, TOOLBAR_HEIGHT, CLIENT_LIST_WIDTH, rect.Height() - TOOLBAR_HEIGHT);
+	mInfoBox.MoveWindow(
+		rect.left + CLIENT_LIST_WIDTH + 5, 
+		TOOLBAR_HEIGHT,
+		rect.Width() - CLIENT_LIST_WIDTH - 5,
+		(rect.Height()- TOOLBAR_HEIGHT)*0.8
+	);
+	mEditSend.MoveWindow(
+		rect.left + CLIENT_LIST_WIDTH + 5, 
+		(rect.Height() - TOOLBAR_HEIGHT) * 0.8 + TOOLBAR_HEIGHT + 5, 
+		rect.Width() - CLIENT_LIST_WIDTH, 
+		(rect.Height() - TOOLBAR_HEIGHT) * 0.2 - 5
+	);
 
-	mImageList.Create(48, 48, ILC_COLOR32 | ILC_MASK, 2, 2);
-	mImageList.SetBkColor(RGB(255, 255, 255));
-
-	CPngImage* pPngImage = new CPngImage();
-	pPngImage->Load(IDB_PNG_OPEN);
-	mImageList.Add(pPngImage, RGB(0, 0, 0));
-	pPngImage->DeleteObject();
-
-	CPngImage* pPngImage2 = new CPngImage();
-	pPngImage2->Load(IDB_PNG_CLOSE);
-	mImageList.Add(pPngImage2, RGB(0, 0, 0));
-	pPngImage2->DeleteObject();
-	mToolBar.GetToolBarCtrl().SetImageList(&mImageList);
-	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_2,FALSE);
-
+	InitToolBar();
+	
 	return TRUE; 
 }
 
@@ -179,10 +177,24 @@ void PCServerDlg::SendClientMsg(const std::string& strMsg,const CClientItem * cl
 void PCServerDlg::OnSize(UINT nType, int cx, int cy)
 {
 	CDialogEx::OnSize(nType, cx, cy);
-	if (SIZE_MINIMIZED == nType)
+	CRect rect;
+	GetClientRect(rect);
+	if (mClientList)
 	{
-		ShowWindow(SW_MINIMIZE);
-		Sleep(200);
+		mClientList.MoveWindow(rect.left, TOOLBAR_HEIGHT, CLIENT_LIST_WIDTH, rect.Height() - TOOLBAR_HEIGHT);
+
+		mInfoBox.MoveWindow(
+			rect.left + CLIENT_LIST_WIDTH + 5,
+			TOOLBAR_HEIGHT,
+			rect.Width() - CLIENT_LIST_WIDTH - 5,
+			(rect.Height() - TOOLBAR_HEIGHT) * 0.8
+		);
+		mEditSend.MoveWindow(
+			rect.left + CLIENT_LIST_WIDTH + 5,
+			(rect.Height() - TOOLBAR_HEIGHT) * 0.8 + TOOLBAR_HEIGHT + 5,
+			rect.Width() - CLIENT_LIST_WIDTH,
+			(rect.Height() - TOOLBAR_HEIGHT) * 0.2 - 5
+		);
 	}
 }
 
@@ -254,21 +266,7 @@ BOOL PCServerDlg::PreTranslateMessage(MSG* pMsg)
 
 void PCServerDlg::OnBtn_1()
 {
-	m_ServerPort = GetDlgItemInt(IDC_EDIT_PORT);
-	if (m_ServerPort <= 1024 || m_ServerPort > 65535)
-	{
-		AfxMessageBox(_T("请输入合适端口"));
-		SetDlgItemText(IDC_EDIT_PORT, _T(""));
-		GetDlgItem(IDC_EDIT_PORT)->SetFocus();
-		return;
-	}
-	//OnEnChangeEditsendbox();
-
-	CString strServerTitle;
-	strServerTitle.Format(_T("Server : %d"), m_ServerPort);
-	SetWindowText(strServerTitle);
-
-	m_Server->SetPort(GetDlgItemInt(IDC_EDIT_PORT));
+	m_Server->SetPort(m_ServerPort);
 	m_Server->Start();
 
 	AddInfo("[SYS] 服务器已开启！\r\n");
@@ -301,10 +299,13 @@ BOOL PCServerDlg::OnToolTipNotify(UINT id, NMHDR* pNMHDR, LRESULT* pResult)
 			switch(nId)
 			{
 				case 0:
-					pTTT->lpszText = _T("Open");
+					pTTT->lpszText = _T("Open Server");
 					break;
 				case 1:
 					pTTT->lpszText = _T("Close");
+					break;
+				case 2:
+					pTTT->lpszText = _T("Close Server");
 					break;
 				default:
 					pTTT->lpszText = _T("");
@@ -317,4 +318,32 @@ BOOL PCServerDlg::OnToolTipNotify(UINT id, NMHDR* pNMHDR, LRESULT* pResult)
 	}
 
 	return FALSE;
+}
+
+void PCServerDlg::InitToolBar()
+{
+	mToolBar.Create(
+		this,
+		WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_TOOLTIPS | CBRS_BORDER_3D | CBRS_FLYBY
+	);
+	mToolBar.LoadToolBar(IDR_TOOLBAR_SERVER);
+	RepositionBars(AFX_IDW_CONTROLBAR_FIRST, AFX_IDW_CONTROLBAR_LAST, 0);
+
+	mImageList.Create(48, 48, ILC_COLOR32 | ILC_MASK, 2, 2);
+	mImageList.SetBkColor(RGB(255, 255, 255));
+
+	CPngImage* pPngImage = new CPngImage();
+	pPngImage->Load(IDB_PNG_OPEN);
+	mImageList.Add(pPngImage, RGB(0, 0, 0));
+	pPngImage->DeleteObject();
+
+	CPngImage* pPngImage2 = new CPngImage();
+	pPngImage2->Load(IDB_PNG_CLOSE);
+	mImageList.Add(pPngImage2, RGB(0, 0, 0));
+	pPngImage2->DeleteObject();
+	mToolBar.GetToolBarCtrl().SetImageList(&mImageList);
+	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_2, FALSE);
+	mToolBar.SetButtonStyle(1, TBBS_SEPARATOR);
+	mToolBar.SetButtonText(0, _T("Open"));
+	mToolBar.SetButtonText(2, _T("Close"));
 }
