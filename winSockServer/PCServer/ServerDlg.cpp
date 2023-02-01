@@ -366,6 +366,9 @@ void PCServerDlg::MoveControls()
 			rect.Width(),
 			TOOLBAR_HEIGHT
 		);
+
+		mStatusBar.SetPaneInfo(0, ID_INDICATORS_X, SBPS_NORMAL, rect.Width() * 0.8);
+		mStatusBar.SetPaneInfo(1, ID_INDICATORS_Y, SBPS_STRETCH, rect.Width() * 0.2);
 	}
 	
 }
