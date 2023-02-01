@@ -38,6 +38,8 @@ PCServerDlg::PCServerDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(PCServerDlg::IDD, pParent)
 	, m_ServerPort(8888)
 	, m_Server(new TcpServer(8888,this))
+	, mToolBarVisible(TRUE)
+	, info(_T(""))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -63,6 +65,8 @@ BEGIN_MESSAGE_MAP(PCServerDlg, CDialogEx)
 	ON_COMMAND(ID_BUTTON_1, &OnBtn_1)
 	ON_COMMAND(ID_BUTTON_2, &OnBtn_2)
 	ON_NOTIFY_EX(TTN_NEEDTEXT,0, OnToolTipNotify)
+	ON_WM_CREATE()
+	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 BOOL PCServerDlg::OnInitDialog()
@@ -77,39 +81,14 @@ BOOL PCServerDlg::OnInitDialog()
 
 	SetWindowText(_T("服务器：8888"));
 
-	LONG lStyle;
-	lStyle = GetWindowLong(mClientList.m_hWnd, GWL_STYLE);
-	lStyle &= ~LVS_TYPEMASK;
-	lStyle |= LVS_REPORT;
-	SetWindowLong(mClientList.m_hWnd,GWL_STYLE,lStyle);
+	InitClientList();
 
-	DWORD dwStyle = mClientList.GetExtendedStyle();
-	dwStyle |= LVS_EX_FULLROWSELECT;
-	dwStyle |= LVS_EX_GRIDLINES;
-	dwStyle |= LVS_EX_CHECKBOXES;
-	mClientList.SetExtendedStyle(dwStyle);
+	MoveControls();
 
-	mClientList.InsertColumn(0, _T("端口"),	LVCFMT_CENTER, 65);
-	mClientList.InsertColumn(1, _T("ip地址"), LVCFMT_CENTER, 65);
-	mClientList.InsertColumn(2, _T("套接字"), LVCFMT_CENTER, 65);
+	mStatusBar.GetStatusBarCtrl().SetBkColor(RGB(0, 0, 255));
 
-	CRect rect;
-	GetClientRect(rect);
-	mClientList.MoveWindow(rect.left, TOOLBAR_HEIGHT, CLIENT_LIST_WIDTH, rect.Height() - TOOLBAR_HEIGHT);
-	mInfoBox.MoveWindow(
-		rect.left + CLIENT_LIST_WIDTH + 5, 
-		TOOLBAR_HEIGHT,
-		rect.Width() - CLIENT_LIST_WIDTH - 5,
-		(rect.Height()- TOOLBAR_HEIGHT)*0.8
-	);
-	mEditSend.MoveWindow(
-		rect.left + CLIENT_LIST_WIDTH + 5, 
-		(rect.Height() - TOOLBAR_HEIGHT) * 0.8 + TOOLBAR_HEIGHT + 5, 
-		rect.Width() - CLIENT_LIST_WIDTH, 
-		(rect.Height() - TOOLBAR_HEIGHT) * 0.2 - 5
-	);
-
-	InitToolBar();
+	SetTimer(TIMER_COUNT, 1000,NULL);
+	SetTimer(TIMER_CLIENT, 1000, NULL);
 	
 	return TRUE; 
 }
@@ -181,20 +160,7 @@ void PCServerDlg::OnSize(UINT nType, int cx, int cy)
 	GetClientRect(rect);
 	if (mClientList)
 	{
-		mClientList.MoveWindow(rect.left, TOOLBAR_HEIGHT, CLIENT_LIST_WIDTH, rect.Height() - TOOLBAR_HEIGHT);
-
-		mInfoBox.MoveWindow(
-			rect.left + CLIENT_LIST_WIDTH + 5,
-			TOOLBAR_HEIGHT,
-			rect.Width() - CLIENT_LIST_WIDTH - 5,
-			(rect.Height() - TOOLBAR_HEIGHT) * 0.8
-		);
-		mEditSend.MoveWindow(
-			rect.left + CLIENT_LIST_WIDTH + 5,
-			(rect.Height() - TOOLBAR_HEIGHT) * 0.8 + TOOLBAR_HEIGHT + 5,
-			rect.Width() - CLIENT_LIST_WIDTH,
-			(rect.Height() - TOOLBAR_HEIGHT) * 0.2 - 5
-		);
+		MoveControls();
 	}
 }
 
@@ -228,7 +194,6 @@ void PCServerDlg::RemoveClient(const CClientItem& item)
 		}
 	}
 }
-
 
 BOOL PCServerDlg::PreTranslateMessage(MSG* pMsg)
 {
@@ -269,16 +234,22 @@ void PCServerDlg::OnBtn_1()
 	m_Server->SetPort(m_ServerPort);
 	m_Server->Start();
 
-	AddInfo("[SYS] 服务器已开启！\r\n");
+	mStatusBar.SetPaneText(0,_T("[SYS] 服务器已开启！"));
 
 	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_1, FALSE);
 	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_2, TRUE);
+
+	//mToolBar.ShowWindow(SW_HIDE);
+
+	//mToolBarVisible = FALSE;
+
+	//MoveControls();
 }
 
 void PCServerDlg::OnBtn_2()
 {
 	m_Server->Stop();
-	AddInfo("[SYS] 服务器已关闭！\r\n");
+	mStatusBar.SetPaneText(0, _T("[SYS] 服务器已关闭！"));
 
 	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_1, TRUE);
 	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_2, FALSE);
@@ -322,9 +293,10 @@ BOOL PCServerDlg::OnToolTipNotify(UINT id, NMHDR* pNMHDR, LRESULT* pResult)
 
 void PCServerDlg::InitToolBar()
 {
-	mToolBar.Create(
+	mToolBar.Create
+	(
 		this,
-		WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_TOOLTIPS | CBRS_BORDER_3D | CBRS_FLYBY
+		WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_TOOLTIPS
 	);
 	mToolBar.LoadToolBar(IDR_TOOLBAR_SERVER);
 	RepositionBars(AFX_IDW_CONTROLBAR_FIRST, AFX_IDW_CONTROLBAR_LAST, 0);
@@ -338,6 +310,7 @@ void PCServerDlg::InitToolBar()
 	pPngImage->DeleteObject();
 
 	CPngImage* pPngImage2 = new CPngImage();
+
 	pPngImage2->Load(IDB_PNG_CLOSE);
 	mImageList.Add(pPngImage2, RGB(0, 0, 0));
 	pPngImage2->DeleteObject();
@@ -346,4 +319,143 @@ void PCServerDlg::InitToolBar()
 	mToolBar.SetButtonStyle(1, TBBS_SEPARATOR);
 	mToolBar.SetButtonText(0, _T("Open"));
 	mToolBar.SetButtonText(2, _T("Close"));
+
+	mToolBar.ShowWindow(SW_SHOW);
+}
+
+void PCServerDlg::MoveControls()
+{
+	if (mClientList)
+	{
+		CRect rect;
+		GetClientRect(rect);
+		mClientList.MoveWindow
+		(
+			rect.left,
+			mToolBarVisible ? TOOLBAR_HEIGHT : rect.top,
+			CLIENT_LIST_WIDTH,
+			mToolBarVisible ? rect.Height() - TOOLBAR_HEIGHT - 5 - STATUSBAR_HEIGHT : rect.Height() - STATUSBAR_HEIGHT - 5
+		);
+		mInfoBox.MoveWindow
+		(
+			rect.left + CLIENT_LIST_WIDTH + 5,
+			mToolBarVisible ? TOOLBAR_HEIGHT: rect.top,
+			rect.Width() - CLIENT_LIST_WIDTH - 10,
+			mToolBarVisible ? (rect.Height() - TOOLBAR_HEIGHT - STATUSBAR_HEIGHT) * 0.8 : (rect.Height() - STATUSBAR_HEIGHT) * 0.8
+		);
+		mEditSend.MoveWindow
+		(
+			rect.left + CLIENT_LIST_WIDTH + 5,
+			mToolBarVisible ? (rect.Height()-TOOLBAR_HEIGHT - STATUSBAR_HEIGHT) * 0.8 + TOOLBAR_HEIGHT + 5 : (rect.Height() - STATUSBAR_HEIGHT) * 0.8 + 5,
+			rect.Width() - CLIENT_LIST_WIDTH - 10,
+			mToolBarVisible ? (rect.Height() - TOOLBAR_HEIGHT - STATUSBAR_HEIGHT) * 0.2 - 10 : (rect.Height() - STATUSBAR_HEIGHT) * 0.2 - 10
+		);
+
+		mStatusBar.MoveWindow
+		(
+			rect.left,
+			rect.Height() - STATUSBAR_HEIGHT,
+			rect.Width(),
+			STATUSBAR_HEIGHT
+		);
+
+		mToolBar.MoveWindow
+		(
+			rect.left,
+			rect.top,
+			rect.Width(),
+			TOOLBAR_HEIGHT
+		);
+	}
+	
+}
+
+
+int PCServerDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+	if (CDialogEx::OnCreate(lpCreateStruct) == -1)
+		return -1;
+	CRect rect;
+	GetClientRect(&rect);
+
+	MoveWindow(rect.left, rect.top, 1200, 800);
+
+	InitToolBar();
+	InitStatusBar();
+	return 0;
+}
+
+void PCServerDlg::InitStatusBar()
+{
+	static UINT indicators[] = {
+	ID_INDICATORS_X,
+	ID_INDICATORS_Y
+	};
+
+	mStatusBar.Create(this);
+	mStatusBar.SetIndicators(indicators,sizeof(indicators)/sizeof(UINT));
+
+	CRect rect;
+	GetClientRect(&rect);
+
+	mStatusBar.SetPaneInfo(0, ID_INDICATORS_X, SBPS_NORMAL, rect.Width() * 0.8);
+	mStatusBar.SetPaneInfo(1, ID_INDICATORS_Y, SBPS_STRETCH, rect.Width() * 0.2);
+
+	mStatusBar.SetPaneText(0, _T(""));
+	mStatusBar.SetPaneText(1, _T(""));
+
+	RepositionBars(AFX_IDW_CONTROLBAR_FIRST,AFX_IDW_CONTROLBAR_LAST, AFX_IDW_CONTROLBAR_FIRST);
+}
+
+void PCServerDlg::OnTimer(UINT_PTR nIDEvent)
+{
+	switch (nIDEvent)
+	{
+	case TIMER_COUNT:
+	{
+		CString str;
+		CTime tm = CTime::GetCurrentTime();
+		str = tm.Format("%Y年%m月%d日 %X");
+		mStatusBar.SetPaneText(1,str);
+	}
+		break;
+	case TIMER_CLIENT:
+	{
+		if (info != _T(""))
+		{
+			this->mStatusBar.SetPaneText(0, info);
+			info = _T("");
+		}
+	}
+		break;
+	default:
+		break;
+	}
+
+	CDialogEx::OnTimer(nIDEvent);
+}
+
+void PCServerDlg::InitClientList()
+{
+	LONG lStyle;
+	lStyle = GetWindowLong(mClientList.m_hWnd, GWL_STYLE);
+	lStyle &= ~LVS_TYPEMASK;
+	lStyle |= LVS_REPORT;
+	SetWindowLong(mClientList.m_hWnd, GWL_STYLE, lStyle);
+
+	DWORD dwStyle = mClientList.GetExtendedStyle();
+	dwStyle |= LVS_EX_FULLROWSELECT;
+	dwStyle |= LVS_EX_GRIDLINES;
+	dwStyle |= LVS_EX_CHECKBOXES;
+	mClientList.SetExtendedStyle(dwStyle);
+
+	mClientList.InsertColumn(0, _T("端口"), LVCFMT_CENTER, 90);
+	mClientList.InsertColumn(1, _T("ip地址"), LVCFMT_CENTER, 90);
+	mClientList.InsertColumn(2, _T("套接字"), LVCFMT_CENTER, 90);
+}
+
+
+void PCServerDlg::NotifyUi(const std::string& msg)
+{
+	info = CString(msg.c_str());
 }

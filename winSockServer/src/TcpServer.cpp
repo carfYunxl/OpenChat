@@ -157,8 +157,8 @@ void TcpServer::SelectFunc(void* pMainWin)
             }
 
             pMainDlg->InsertClient(clientAddr,connSock);
-            pMainDlg->AddInfo("[SYS] " + std::to_string(ntohs(clientAddr.sin_port)) + "已登录");
-
+            //pMainDlg->SetStatus("[SYS] " + std::to_string(ntohs(clientAddr.sin_port)) + "已登录");
+            pMainDlg->NotifyUi("[SYS] " + std::to_string(ntohs(clientAddr.sin_port)) + "已登录");
             AddClient(clientAddr,connSock);
 
             std::thread client_thread
@@ -200,7 +200,7 @@ void TcpServer::ClientFunc(const CClientItem& client, void* pMainWin)
             {
                 pMainDlg->RemoveClient(client); 
                 DeleteClient(client.cPort);
-                pMainDlg->AddInfo("[SYS] " + std::to_string(client.cPort) + " 已离开");
+                pMainDlg->NotifyUi("[SYS] " + std::to_string(client.cPort) + " 已离开");
                 break;
             }
         }

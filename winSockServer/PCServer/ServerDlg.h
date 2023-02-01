@@ -3,8 +3,12 @@
 #include "ClientItem.h"
 #include "resource.h"
 
-constexpr size_t TOOLBAR_HEIGHT = 90;
-constexpr size_t CLIENT_LIST_WIDTH = 200;
+constexpr size_t TOOLBAR_HEIGHT = 80;
+constexpr size_t STATUSBAR_HEIGHT = 40;
+constexpr size_t CLIENT_LIST_WIDTH = 300;
+
+constexpr size_t TIMER_COUNT = 1;
+constexpr size_t TIMER_CLIENT = 2;
 
 class TcpServer;
 class PCServerDlg : public CDialogEx
@@ -27,6 +31,8 @@ protected:
 	afx_msg void OnBtn_1();
 	afx_msg void OnBtn_2();
 	afx_msg BOOL OnToolTipNotify(UINT id,NMHDR* pNMHDR,LRESULT* pResult);
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	DECLARE_MESSAGE_MAP();
 
 public:
@@ -35,6 +41,7 @@ public:
 	void SendClientMsg(const std::string& strMsg,const CClientItem * client);
 	void InsertClient(const sockaddr_in& clientAddr,SOCKET socket);
 	void RemoveClient(const CClientItem& item);
+	void NotifyUi(const std::string& msg);
 private:
 	TcpServer*	m_Server;
 	size_t		m_ServerPort;
@@ -43,6 +50,12 @@ private:
 	CEdit		mEditSend;
 	CToolBar	mToolBar;
 	CImageList	mImageList;
+	BOOL		mToolBarVisible;
+	CStatusBar  mStatusBar;
+	CString		info;
 private:
 	void InitToolBar();
+	void InitStatusBar();
+	void MoveControls();
+	void InitClientList();
 };
