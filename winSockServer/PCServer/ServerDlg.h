@@ -3,9 +3,9 @@
 #include "ClientItem.h"
 #include "resource.h"
 
-constexpr size_t TOOLBAR_HEIGHT = 80;
-constexpr size_t STATUSBAR_HEIGHT = 40;
-constexpr size_t CLIENT_LIST_WIDTH = 300;
+constexpr int TOOLBAR_HEIGHT = 80;
+constexpr int STATUSBAR_HEIGHT = 40;
+constexpr int CLIENT_LIST_WIDTH = 300;
 
 constexpr size_t TIMER_COUNT = 1;
 constexpr size_t TIMER_CLIENT = 2;
@@ -58,4 +58,5 @@ private:
 	void InitStatusBar();
 	void MoveControls();
 	void InitClientList();
+	
 };

@@ -184,7 +184,7 @@ void PCServerDlg::InsertClient(const sockaddr_in& clientAddr, SOCKET socket)
 
 void PCServerDlg::RemoveClient(const CClientItem& item)
 {
-	for (size_t i = 0;i < mClientList.GetItemCount();++i)
+	for (int i = 0;i < mClientList.GetItemCount();++i)
 	{
 		
 		if(_ttoi(mClientList.GetItemText(i, 0)) == item.cPort)
@@ -211,11 +211,11 @@ BOOL PCServerDlg::PreTranslateMessage(MSG* pMsg)
 
 			std::string str = CT2A(strSend.GetString());
 
-			for (size_t i = 0; i < mClientList.GetItemCount(); ++i)
+			for (int i = 0; i < mClientList.GetItemCount(); ++i)
 			{
 				if (mClientList.GetCheck(i))
 				{
-					SOCKET socket = _tcstoui64(mClientList.GetItemText(i, 2), NULL, 10);
+					SOCKET socket = _tcstoul(mClientList.GetItemText(i, 2), NULL, 10);
 					int sendbyte = send(socket, str.c_str(), str.length(), 0);
 				}
 			}
@@ -329,26 +329,43 @@ void PCServerDlg::MoveControls()
 	{
 		CRect rect;
 		GetClientRect(rect);
+		int nWidth = CLIENT_LIST_WIDTH;
+		int nHeight = mToolBarVisible ? rect.Height() - TOOLBAR_HEIGHT - 5 - STATUSBAR_HEIGHT : rect.Height() - STATUSBAR_HEIGHT - 5;
 		mClientList.MoveWindow
 		(
 			rect.left,
 			mToolBarVisible ? TOOLBAR_HEIGHT : rect.top,
-			CLIENT_LIST_WIDTH,
-			mToolBarVisible ? rect.Height() - TOOLBAR_HEIGHT - 5 - STATUSBAR_HEIGHT : rect.Height() - STATUSBAR_HEIGHT - 5
+			nWidth,
+			nHeight
 		);
+
+		nWidth = rect.Width() - CLIENT_LIST_WIDTH - 10;
+		nHeight = mToolBarVisible 
+			? int( ((double)rect.Height() - (double)TOOLBAR_HEIGHT - (double)STATUSBAR_HEIGHT) * 0.8 )
+			: int( ((double)rect.Height() - (double)STATUSBAR_HEIGHT) * 0.8 );
 		mInfoBox.MoveWindow
 		(
 			rect.left + CLIENT_LIST_WIDTH + 5,
 			mToolBarVisible ? TOOLBAR_HEIGHT: rect.top,
-			rect.Width() - CLIENT_LIST_WIDTH - 10,
-			mToolBarVisible ? (rect.Height() - TOOLBAR_HEIGHT - STATUSBAR_HEIGHT) * 0.8 : (rect.Height() - STATUSBAR_HEIGHT) * 0.8
+			nWidth,
+			nHeight
 		);
+
+		int nX = rect.left + CLIENT_LIST_WIDTH + 5;
+		int nY = mToolBarVisible 
+			? int( ((double)rect.Height() - (double)TOOLBAR_HEIGHT - (double)STATUSBAR_HEIGHT) * 0.8 + TOOLBAR_HEIGHT + 5 )
+			: int( ((double)rect.Height() - (double)STATUSBAR_HEIGHT) * 0.8 + 5 );
+		nWidth = rect.Width() - CLIENT_LIST_WIDTH - 10;
+		nHeight = mToolBarVisible 
+			? int( ((double)rect.Height() - (double)TOOLBAR_HEIGHT - (double)STATUSBAR_HEIGHT) * 0.2 - 10 )
+			: int( ((double)rect.Height() - (double)STATUSBAR_HEIGHT) * 0.2 - 10 );
+
 		mEditSend.MoveWindow
 		(
-			rect.left + CLIENT_LIST_WIDTH + 5,
-			mToolBarVisible ? (rect.Height()-TOOLBAR_HEIGHT - STATUSBAR_HEIGHT) * 0.8 + TOOLBAR_HEIGHT + 5 : (rect.Height() - STATUSBAR_HEIGHT) * 0.8 + 5,
-			rect.Width() - CLIENT_LIST_WIDTH - 10,
-			mToolBarVisible ? (rect.Height() - TOOLBAR_HEIGHT - STATUSBAR_HEIGHT) * 0.2 - 10 : (rect.Height() - STATUSBAR_HEIGHT) * 0.2 - 10
+			nX,
+			nY,
+			nWidth,
+			nHeight
 		);
 
 		mStatusBar.MoveWindow
@@ -367,8 +384,8 @@ void PCServerDlg::MoveControls()
 			TOOLBAR_HEIGHT
 		);
 
-		mStatusBar.SetPaneInfo(0, ID_INDICATORS_X, SBPS_NORMAL, rect.Width() * 0.8);
-		mStatusBar.SetPaneInfo(1, ID_INDICATORS_Y, SBPS_STRETCH, rect.Width() * 0.2);
+		mStatusBar.SetPaneInfo(0, ID_INDICATORS_X, SBPS_NORMAL, static_cast<int>(rect.Width() * 0.8));
+		mStatusBar.SetPaneInfo(1, ID_INDICATORS_Y, SBPS_STRETCH, static_cast<int>(int(rect.Width() * 0.2)));
 	}
 	
 }
@@ -401,8 +418,8 @@ void PCServerDlg::InitStatusBar()
 	CRect rect;
 	GetClientRect(&rect);
 
-	mStatusBar.SetPaneInfo(0, ID_INDICATORS_X, SBPS_NORMAL, rect.Width() * 0.8);
-	mStatusBar.SetPaneInfo(1, ID_INDICATORS_Y, SBPS_STRETCH, rect.Width() * 0.2);
+	mStatusBar.SetPaneInfo(0, ID_INDICATORS_X, SBPS_NORMAL, static_cast<int>(rect.Width() * 0.8));
+	mStatusBar.SetPaneInfo(1, ID_INDICATORS_Y, SBPS_STRETCH, static_cast<int>(rect.Width() * 0.2));
 
 	mStatusBar.SetPaneText(0, _T(""));
 	mStatusBar.SetPaneText(1, _T(""));

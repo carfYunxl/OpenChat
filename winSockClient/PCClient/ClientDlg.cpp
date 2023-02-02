@@ -3,6 +3,7 @@
 #include "ClientDlg.h"
 #include "afxdialogex.h"
 #include "TcpClient.h"
+#include "mysql.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -83,6 +84,8 @@ BOOL PCClientDlg::OnInitDialog()
 
 	SetIcon(m_hIcon, TRUE);
 	SetIcon(m_hIcon, FALSE);
+
+	ConnectDataBase();
 
 	return TRUE;
 }
@@ -197,4 +200,24 @@ BOOL PCClientDlg::PreTranslateMessage(MSG* pMsg)
 void PCClientDlg::AddInfo(const std::string& info)
 {
 	mInfoBox.AddString(CString(info.c_str()));
+}
+
+void PCClientDlg::ConnectDataBase()
+{
+	MYSQL mSqlCon;
+	mysql_init(&mSqlCon);
+
+	if (!mysql_real_connect(&mSqlCon, "localhost", "root", "123456", "user", 3306, NULL, 0))
+	{
+		AfxMessageBox(_T("连接失败！"));
+		return;
+	}
+	AfxMessageBox(_T("连接成功！"));
+
+	//设置数据库字符格式，避免中文乱码
+	//mysql_query(&mSqlCon,"set names 'gb1232'");
+
+	//mysql_query(&mSqlCon,"select * from user");
+
+	//mSqlCon.
 }

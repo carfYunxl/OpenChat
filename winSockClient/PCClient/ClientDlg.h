@@ -31,4 +31,6 @@ private:
 	TcpClient*		m_Client;
 	CEdit			mEditSend;
 	CListBox		mInfoBox;
+private:
+	void ConnectDataBase();
 };
