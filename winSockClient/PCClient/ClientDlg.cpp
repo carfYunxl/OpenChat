@@ -204,20 +204,71 @@ void PCClientDlg::AddInfo(const std::string& info)
 
 void PCClientDlg::ConnectDataBase()
 {
-	MYSQL mSqlCon;
-	mysql_init(&mSqlCon);
+	MYSQL mSql;
+	mysql_init(&mSql);
 
-	if (!mysql_real_connect(&mSqlCon, "localhost", "root", "123456", "user", 3306, NULL, 0))
+	if (!mysql_real_connect(&mSql, "localhost", "root", "123456", "new", 3306, NULL, 0))
 	{
-		AfxMessageBox(_T("连接失败！"));
+		AfxMessageBox(_T("connect failed!！"));
 		return;
 	}
-	AfxMessageBox(_T("连接成功！"));
+	AfxMessageBox(_T("connect success!！"));
 
 	//设置数据库字符格式，避免中文乱码
-	//mysql_query(&mSqlCon,"set names 'gb1232'");
+	//mysql_query(&mSql,"set names gb1232");
+	//mysql_query(&mSql, "set names gbk");
 
-	//mysql_query(&mSqlCon,"select * from user");
+	if (mysql_query(&mSql, "select * from user"))
+	{
+		AfxMessageBox(_T("query failed!"));
+		return;
+	}
 
-	//mSqlCon.
+	MYSQL_FIELD* fd;    //字段列数组
+	char field[32][32]; //存字段名二维数组
+	MYSQL_RES* res;     //行的一个查询结果集
+	MYSQL_ROW column;   //数据行的列
+
+	res = mysql_store_result(&mSql);
+	if (!res)
+	{
+		AfxMessageBox(_T("Couldn't get result from %s\n", mysql_error(&mSql)));
+		return ;
+	}
+
+	uint64_t rows = mysql_affected_rows(&mSql);
+
+	//获取列数
+	int j = mysql_num_fields(res);
+
+	//存储字段信息
+	char* str_field[32];
+
+	//获取字段名
+	for (int i = 0; i < j; i++)
+	{
+		str_field[i] = mysql_fetch_field(res)->name;
+	}
+
+	//打印字段
+	CString str;
+	for (int i = 0; i < j; i++)
+	{
+		str.AppendFormat(_T("%S\t"),str_field[i]);
+	}
+	AfxMessageBox(str);
+
+	//打印查询结果
+	str.Format(_T(""));
+	while (column = mysql_fetch_row(res))
+	{
+		for (int i = 0; i < j; i++)
+		{
+			str.AppendFormat(_T("%S\t"),column[i]);
+		}
+		str.AppendFormat(_T("\n"));
+	}
+	AfxMessageBox(str);
+	mysql_free_result(res);
+	mysql_close(&mSql);
 }
