@@ -51,26 +51,13 @@ bool RMysql::RQuery(const std::string& query,RESULT& result, bool select /*= fal
     size_t   columns = mysql_num_fields(res);
     
     result.resize(columns);
-    
-    /*for (size_t i = 0; i < columns; ++i)
-    {
-        result.at(i).push_back(mysql_fetch_field(res)->name);
-    }*/
 
     MYSQL_ROW column;
     while (column = mysql_fetch_row(res))
     {
         for (size_t i = 0; i < columns; i++)
         {
-            char* arr = column[i];
-            if (arr == NULL)
-            {
-                result.at(i).push_back("NULL");
-            }
-            else
-            {
-                result.at(i).push_back(arr);
-            }
+            column[i] == NULL ? result.at(i).push_back("NULL") : result.at(i).push_back(column[i]);
         }
     }
 

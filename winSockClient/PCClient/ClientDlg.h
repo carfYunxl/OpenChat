@@ -24,8 +24,6 @@ protected:
 
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
-	afx_msg void OnBnClickedMfcbuttonConnect();
-	afx_msg void OnBnClickedMfcbuttonDisconnect();
 	DECLARE_MESSAGE_MAP()
 public:
 	BOOL EnableWindow(DWORD DlgId, BOOL bUsed);
@@ -37,6 +35,8 @@ private:
 	CEdit			mEditSend;
 	CListBox		mInfoBox;
 	R::RMysql*		m_sql;
+	size_t			m_port;
 private:
-	void ConnectDataBase();
+	void OperaDataBase();
+	void ConnectToServer();
 };
