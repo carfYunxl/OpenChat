@@ -15,7 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ReadMe.txt" />
     <None Include="res\PCClient.rc2">
       <Filter>资源文件</Filter>
     </None>
@@ -42,6 +41,12 @@
     <ClInclude Include="..\..\winSockServer\include\TcpClient.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\winSockServer\include\RMysql.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CLogin.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -54,6 +59,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\..\winSockServer\src\TcpClient.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\winSockServer\src\RMysql.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CLogin.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

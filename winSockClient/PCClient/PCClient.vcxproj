@@ -209,12 +209,13 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="ReadMe.txt" />
     <None Include="res\PCClient.ico" />
     <None Include="res\PCClient.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\winSockServer\include\RMysql.h" />
     <ClInclude Include="..\..\winSockServer\include\TcpClient.h" />
+    <ClInclude Include="CLogin.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -222,7 +223,9 @@
     <ClInclude Include="ClientDlg.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\winSockServer\src\RMysql.cpp" />
     <ClCompile Include="..\..\winSockServer\src\TcpClient.cpp" />
+    <ClCompile Include="CLogin.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

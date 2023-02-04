@@ -4,10 +4,14 @@
 #include "afxdialogex.h"
 #include "TcpClient.h"
 #include "mysql.h"
+#include "RMysql.h"
+#include "CLogin.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+using namespace R;
 
 class CAboutDlg : public CDialogEx
 {
@@ -35,8 +39,9 @@ END_MESSAGE_MAP()
 
 PCClientDlg::PCClientDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(PCClientDlg::IDD, pParent)
-	,m_ServerStatus(ServerStatus::OFF)
-	,m_Client(new TcpClient(8888,"127.0.0.1",this))
+	, m_ServerStatus(ServerStatus::OFF)
+	, m_Client(new TcpClient(8888,"127.0.0.1",this))
+	, m_sql(new RMysql("localhost","root","123456","new"))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -85,8 +90,39 @@ BOOL PCClientDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);
 	SetIcon(m_hIcon, FALSE);
 
-	ConnectDataBase();
+	//ConnectDataBase();
 
+	//int x = 0;
+	CLogin login;
+	CString strAcc;
+	CString strpwd;
+	int res = login.DoModal();
+	strAcc = login.GetAcc();
+	strpwd = login.GetPwd();
+	if (res == 11)
+	{
+		RESULT result;
+		std::string str = "select acc from info where psd = '" + std::string(CT2A(strpwd.GetString())) + "'";
+		m_sql->RQuery(str.c_str(), result, true);
+
+		if (!result.at(0).empty())
+		{
+			if (CString(result.at(0).at(0).c_str()) == strAcc)
+			{
+				SetWindowText(strAcc);
+				return TRUE;
+			}
+			return FALSE;
+		}
+		return FALSE;
+	}
+	else if (res == 10)
+	{
+		RESULT result;
+		std::string str = "insert into info(acc,psd) values('" + std::string(CT2A(strAcc.GetString())) + "','" + std::string(CT2A(strpwd.GetString())) + "')";
+		m_sql->RQuery(str.c_str(), result, false);
+		SetWindowText(strAcc);
+	}
 	return TRUE;
 }
 

@@ -4,6 +4,11 @@
 #include "common_header.h"
 
 class TcpClient;
+
+namespace R
+{
+	class RMysql;
+}
 class PCClientDlg : public CDialogEx
 {
 public:
@@ -31,6 +36,7 @@ private:
 	TcpClient*		m_Client;
 	CEdit			mEditSend;
 	CListBox		mInfoBox;
+	R::RMysql*		m_sql;
 private:
 	void ConnectDataBase();
 };
