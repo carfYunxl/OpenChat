@@ -19,7 +19,7 @@ public:
         m_port(8888), m_ip("127.0.0.1"),m_socket(INVALID_SOCKET),m_pMainWin(nullptr) {};
     TcpClient(size_t port,const std::string& ip,void* parent);
 
-    void    Connect();
+    bool    Connect();
     void    DisConnect();
 
     void    SetPort(size_t port);
@@ -33,7 +33,6 @@ private:
     size_t      m_port;
     std::string m_ip;
     void*       m_pMainWin;
-
 };
 
 

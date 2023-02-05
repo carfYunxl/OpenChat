@@ -3,12 +3,15 @@
 #include "resource.h"
 #include "common_header.h"
 
-class TcpClient;
+constexpr size_t LOGIN = 11;
+constexpr size_t REGIS = 10;
 
+class TcpClient;
 namespace R
 {
 	class RMysql;
 }
+
 class PCClientDlg : public CDialogEx
 {
 public:
@@ -26,9 +29,14 @@ protected:
 	afx_msg void OnPaint();
 	DECLARE_MESSAGE_MAP()
 public:
-	BOOL EnableWindow(DWORD DlgId, BOOL bUsed);
-	void SetServerState(ServerStatus state) { m_ServerStatus = state; }
-	void AddInfo(const std::string& info);
+	BOOL	EnableWindow(DWORD DlgId, BOOL bUsed);
+	void	SetServerState(ServerStatus state) { m_ServerStatus = state; }
+	void	AddInfo(const std::string& info);
+	size_t	GetPort() { return m_port; }
+	std::string	GetQueryString(const std::string& input)
+	{
+		return "'" + input + "'";
+	}
 private:
 	ServerStatus	m_ServerStatus;
 	TcpClient*		m_Client;
@@ -38,5 +46,7 @@ private:
 	size_t			m_port;
 private:
 	void OperaDataBase();
-	void ConnectToServer();
+	bool ConnectToServer();
+public:
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 };

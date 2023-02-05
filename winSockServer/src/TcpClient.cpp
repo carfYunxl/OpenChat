@@ -13,13 +13,13 @@ TcpClient::TcpClient(size_t port, const std::string& ip, void* parent)
  * @brief   connect to server
  * 
  */
-void TcpClient::Connect()
+bool TcpClient::Connect()
 {
     m_socket = socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
 
     if (m_socket == INVALID_SOCKET)
     {
-        return;
+        return false;
     }
 
     sockaddr_in clientAddr;
@@ -31,13 +31,14 @@ void TcpClient::Connect()
 
     if (SOCKET_ERROR == ret)
     {
-        return;
+        return false;
     }
 
     //success connect to server,then create a thread to receive infomation from server.
     std::thread client_thread(std::bind(&TcpClient::ClientFunc,this, m_pMainWin));
 
     client_thread.detach();
+    return true;
 }
 
 /**

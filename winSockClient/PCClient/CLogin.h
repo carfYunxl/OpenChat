@@ -19,13 +19,14 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 public:
-	afx_msg void OnBnClickedButton1();
-	afx_msg void OnBnClickedButton2();
-
 	CString GetAcc() { return m_acc; }
 	CString GetPwd() { return m_pwd; }
+	void SetInfo(const CString& info) {
+		m_login_info.SetWindowTextW(info);
+	}
 
 private:
 	CString m_acc;
 	CString m_pwd;
+	CRichEditCtrl m_login_info;
 };
