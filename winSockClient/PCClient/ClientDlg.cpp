@@ -3,9 +3,8 @@
 #include "ClientDlg.h"
 #include "afxdialogex.h"
 #include "TcpClient.h"
-#include "mysql.h"
-#include "RMysql.h"
-#include "CLogin.h"
+
+#include "LoginDlg.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -39,8 +38,8 @@ END_MESSAGE_MAP()
 PCClientDlg::PCClientDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(PCClientDlg::IDD, pParent)
 	, m_ServerStatus(ServerStatus::OFF)
+	, m_port(0)
 	, m_Client(new TcpClient(8888,"127.0.0.1",this))
-	, m_sql(new RMysql("localhost","root","123456","new"))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -73,20 +72,6 @@ BOOL PCClientDlg::OnInitDialog()
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
 	ASSERT(IDM_ABOUTBOX < 0xF000);
 
-	CMenu* pSysMenu = GetSystemMenu(FALSE);
-	if (pSysMenu != NULL)
-	{
-		BOOL bNameValid;
-		CString strAboutMenu;
-		bNameValid = strAboutMenu.LoadString(IDS_ABOUTBOX);
-		ASSERT(bNameValid);
-		if (!strAboutMenu.IsEmpty())
-		{
-			pSysMenu->AppendMenu(MF_SEPARATOR);
-			pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
-		}
-	}
-
 	SetIcon(m_hIcon, TRUE);
 	SetIcon(m_hIcon, FALSE);
 
@@ -98,8 +83,14 @@ BOOL PCClientDlg::OnInitDialog()
 		return FALSE;
 	}
 
-	//write info to mysql
-	OperaDataBase();
+	LoginDlg m_LoginDlg;
+	m_LoginDlg.Init(this);
+	int ret = m_LoginDlg.DoModal();
+	if (ret == IDCANCEL)
+	{
+		AfxGetMainWnd()->SendMessage(WM_CLOSE);
+	}
+	int x = 1;
 	return TRUE;
 }
 
@@ -197,54 +188,14 @@ void PCClientDlg::AddInfo(const std::string& info)
 	mInfoBox.AddString(CString(info.c_str()));
 }
 
-void PCClientDlg::OperaDataBase()
-{
-	CString strAcc;
-	CString strpwd;
-	CLogin m_loginWnd;
-	int res = m_loginWnd.DoModal();
-	strAcc = m_loginWnd.GetAcc();
-	strpwd = m_loginWnd.GetPwd();
-	if (res == LOGIN)
-	{
-		RESULT result;
-		std::string str = "select account from info where password = '" + std::string(CT2A(strpwd.GetString())) + "'";
-		m_sql->RQuery(str.c_str(), result, true);
-		if (result.at(0).empty())
-		{
-			m_loginWnd.SetInfo(_T("Ã»ÓÐÕËºÅ£¿µã»÷×¢²á£¡"));
-			AfxGetMainWnd()->SendMessage(WM_CLOSE);
-			return;
-		}
-
-		if (CString(result.at(0).at(0).c_str()) != strAcc)
-		{
-			AfxMessageBox(_T("²»´æÔÚµÄÕË»§"));
-			AfxGetMainWnd()->SendMessage(WM_CLOSE);
-			return;
-		}
-		SetWindowText(strAcc);
-	}
-	else if (res == REGIS)
-	{
-		m_loginWnd.SetWindowText(_T("×¢²áÕËºÅ"));
-		RESULT result;
-		std::string strQuery = "insert into info(ip,port,socket,account,password) values";
-		std::string ip = GetQueryString("127.0.0.1");
-		std::string port = GetQueryString(std::to_string(GetPort()));
-		std::string socket = GetQueryString(std::to_string(m_Client->GetSocket()));
-		std::string account = GetQueryString(std::string(CT2A(strAcc.GetString())));
-		std::string password = GetQueryString(std::string(CT2A(strpwd.GetString())));
-		strQuery = strQuery + "(" + ip + ","  + port + "," + socket + "," + account + "," + password + ")";
-		m_sql->RQuery(strQuery.c_str(), result, false);
-		SetWindowText(strAcc);
-	}
-}
-
-
 int PCClientDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
 	if (CDialogEx::OnCreate(lpCreateStruct) == -1)
 		return -1;
 	return 0;
+}
+
+SOCKET PCClientDlg::GetClientSocket()
+{
+	return m_Client->GetSocket();
 }

@@ -41,10 +41,10 @@
     <ClInclude Include="..\..\winSockServer\include\RMysql.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="CLogin.h">
+    <ClInclude Include="resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
+    <ClInclude Include="LoginDlg.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -64,7 +64,7 @@
     <ClCompile Include="..\..\winSockServer\src\RMysql.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="CLogin.cpp">
+    <ClCompile Include="LoginDlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

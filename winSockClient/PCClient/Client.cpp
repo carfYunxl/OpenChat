@@ -24,6 +24,8 @@ BOOL PCClientApp::InitInstance()
 	InitCtrls.dwICC = ICC_WIN95_CLASSES;
 	InitCommonControlsEx(&InitCtrls);
 
+	AfxInitRichEdit2();
+
 	CWinApp::InitInstance();
 
 	if (!AfxSocketInit())

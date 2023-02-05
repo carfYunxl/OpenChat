@@ -2,7 +2,6 @@
 #include "afxwin.h"
 #include "resource.h"
 #include "common_header.h"
-
 constexpr size_t LOGIN = 11;
 constexpr size_t REGIS = 10;
 
@@ -37,15 +36,16 @@ public:
 	{
 		return "'" + input + "'";
 	}
+
+	SOCKET GetClientSocket();
+
 private:
 	ServerStatus	m_ServerStatus;
 	TcpClient*		m_Client;
 	CEdit			mEditSend;
 	CListBox		mInfoBox;
-	R::RMysql*		m_sql;
 	size_t			m_port;
 private:
-	void OperaDataBase();
 	bool ConnectToServer();
 public:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
