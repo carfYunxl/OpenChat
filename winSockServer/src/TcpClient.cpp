@@ -68,11 +68,11 @@ void TcpClient::ClientFunc(void* pMainWin)
                 sockaddr_in connAddr;
                 int len = sizeof(connAddr);
                 getpeername(m_socket,(sockaddr*)&connAddr,&len);
-                pDlg->AddInfo(std::to_string(ntohs(connAddr.sin_port)) + " Say: " + std::string(msg));
+                pDlg->AddInfo(std::to_string(ntohs(connAddr.sin_port)) + " Say:\n" + std::string(msg) + "\n");
             }
             else
             {
-                pDlg->AddInfo("已断线，请重新连接");
+                pDlg->AddInfo("已断线，请重新连接\n");
                 pDlg->SetServerState(ServerStatus::OFF);
                 shutdown(m_socket, SD_BOTH);
                 break;

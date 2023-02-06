@@ -52,9 +52,9 @@ PCServerDlg::~PCServerDlg()
 void PCServerDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_LIST_SHOW, mInfoBox);
+	DDX_Control(pDX, IDC_RICHEDIT21_SHOW, mInfoBox);
 	DDX_Control(pDX, IDC_LIST_CLIENT_SHOW, mClientList);
-	DDX_Control(pDX, IDC_EDIT_SEND, mEditSend);
+	DDX_Control(pDX, IDC_RICHEDIT22_SEND, mEditSend);
 }
 
 BEGIN_MESSAGE_MAP(PCServerDlg, CDialogEx)
@@ -89,7 +89,8 @@ BOOL PCServerDlg::OnInitDialog()
 
 	SetTimer(TIMER_COUNT, 1000,NULL);
 	SetTimer(TIMER_CLIENT, 1000, NULL);
-	
+
+	mInfoBox.SetBackgroundColor(FALSE,RGB(192,210,240));
 	return TRUE; 
 }
 
@@ -129,7 +130,10 @@ BOOL PCServerDlg::EnableWindow(DWORD DlgId, BOOL bUsed)
 //设置文本框文本
 void PCServerDlg::AddInfo(const std::string& strMsg)
 {
-	mInfoBox.AddString(CString(strMsg.c_str()));
+	mInfoBox.SetSel(-1, -1);
+	mInfoBox.ReplaceSel(CString(strMsg.c_str()));
+
+	SetStyle(0, strMsg.length());
 }
 
 void PCServerDlg::SendClientMsg(const std::string& strMsg,const CClientItem * client)
@@ -478,4 +482,28 @@ void PCServerDlg::InitClientList()
 void PCServerDlg::NotifyUi(const std::string& msg)
 {
 	info = CString(msg.c_str());
+}
+
+void PCServerDlg::PCServerDlg::SetStyle(long start, long end)
+{
+	CHARFORMAT cf;
+	ZeroMemory(&cf, sizeof(CHARFORMAT));
+	cf.cbSize = sizeof(CHARFORMAT);
+	cf.dwMask = CFM_BOLD | CFM_COLOR | CFM_FACE |
+		CFM_ITALIC | CFM_SIZE | CFM_UNDERLINE;
+	cf.dwEffects = 0;
+	cf.yHeight = 15 * 15;
+	cf.crTextColor = RGB(255, 0, 0);
+	wcscpy(cf.szFaceName,_T("微软雅黑"));
+
+	mInfoBox.SetSel(start, end);
+	mInfoBox.SetSelectionCharFormat(cf);
+
+	//设置行间距
+	PARAFORMAT2 pf2;
+	pf2.cbSize = sizeof(PARAFORMAT2);
+	pf2.dwMask = PFM_LINESPACING | PFM_SPACEAFTER;
+	pf2.dyLineSpacing = 355;
+	pf2.bLineSpacingRule = 4;
+	mInfoBox.SetParaFormat(pf2);
 }

@@ -54,8 +54,8 @@ PCClientDlg::~PCClientDlg()
 void PCClientDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_EDIT_SEND_BOX, mEditSend);
-	DDX_Control(pDX, IDC_LIST_INFO, mInfoBox);
+	DDX_Control(pDX, IDC_RICHEDIT22_SEND_BOX, mEditSend);
+	DDX_Control(pDX, IDC_RICHEDIT21_INFO, mInfoBox);
 }
 
 BEGIN_MESSAGE_MAP(PCClientDlg, CDialogEx)
@@ -64,6 +64,7 @@ BEGIN_MESSAGE_MAP(PCClientDlg, CDialogEx)
 	ON_WM_SETFOCUS()
 	ON_WM_SETFOCUS()
 	ON_WM_CREATE()
+	ON_BN_CLICKED(IDC_MFCBUTTON_CONNECT, &PCClientDlg::OnBnClickedMfcbuttonConnect)
 END_MESSAGE_MAP()
 
 BOOL PCClientDlg::OnInitDialog()
@@ -75,6 +76,7 @@ BOOL PCClientDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);
 	SetIcon(m_hIcon, FALSE);
 
+#if 0
 	//自动连接服务器
 	if (!ConnectToServer())
 	{
@@ -82,7 +84,6 @@ BOOL PCClientDlg::OnInitDialog()
 		AfxGetMainWnd()->SendMessage(WM_CLOSE);
 		return FALSE;
 	}
-
 	LoginDlg m_LoginDlg;
 	m_LoginDlg.Init(this);
 	int ret = m_LoginDlg.DoModal();
@@ -90,7 +91,7 @@ BOOL PCClientDlg::OnInitDialog()
 	{
 		AfxGetMainWnd()->SendMessage(WM_CLOSE);
 	}
-	int x = 1;
+#endif
 	return TRUE;
 }
 
@@ -155,7 +156,8 @@ bool PCClientDlg::ConnectToServer()
 
 	m_port = ntohs(cliAddr.sin_port);
 
-	mInfoBox.AddString(_T("连接服务器成功"));
+	mInfoBox.SetSel(-1, -1);
+	mInfoBox.ReplaceSel(_T("连接服务器成功\n"));
 	m_ServerStatus = ServerStatus::ON;
 	return true;
 }
@@ -183,9 +185,10 @@ BOOL PCClientDlg::PreTranslateMessage(MSG* pMsg)
 	return CDialogEx::PreTranslateMessage(pMsg);
 }
 
-void PCClientDlg::AddInfo(const std::string& info)
+void PCClientDlg::AddInfo(const std::string& info)      
 {
-	mInfoBox.AddString(CString(info.c_str()));
+	mInfoBox.SetSel(-1, -1);
+	mInfoBox.ReplaceSel(CString(info.c_str()));
 }
 
 int PCClientDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -198,4 +201,10 @@ int PCClientDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
 SOCKET PCClientDlg::GetClientSocket()
 {
 	return m_Client->GetSocket();
+}
+
+
+void PCClientDlg::OnBnClickedMfcbuttonConnect()
+{
+	ConnectToServer();
 }

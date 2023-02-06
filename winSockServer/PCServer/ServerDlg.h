@@ -43,20 +43,20 @@ public:
 	void RemoveClient(const CClientItem& item);
 	void NotifyUi(const std::string& msg);
 private:
-	TcpServer*	m_Server;
-	size_t		m_ServerPort;
-	CListBox	mInfoBox;
-	CListCtrl	mClientList;
-	CEdit		mEditSend;
-	CToolBar	mToolBar;
-	CImageList	mImageList;
-	BOOL		mToolBarVisible;
-	CStatusBar  mStatusBar;
-	CString		info;
+	TcpServer*		m_Server;
+	size_t			m_ServerPort;
+	CRichEditCtrl	mInfoBox;
+	CListCtrl		mClientList;
+	CRichEditCtrl	mEditSend;
+	CToolBar		mToolBar;
+	CImageList		mImageList;
+	BOOL			mToolBarVisible;
+	CStatusBar		mStatusBar;
+	CString			info;
 private:
 	void InitToolBar();
 	void InitStatusBar();
 	void MoveControls();
 	void InitClientList();
-	
+	void SetStyle(long start,long end);
 };

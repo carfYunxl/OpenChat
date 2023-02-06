@@ -40,13 +40,14 @@ public:
 	SOCKET GetClientSocket();
 
 private:
-	ServerStatus	m_ServerStatus;
-	TcpClient*		m_Client;
-	CEdit			mEditSend;
-	CListBox		mInfoBox;
-	size_t			m_port;
+	ServerStatus		m_ServerStatus;
+	TcpClient*			m_Client;
+	CEdit				mEditSend;
+	CRichEditCtrl		mInfoBox;
+	size_t				m_port;
 private:
 	bool ConnectToServer();
 public:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnBnClickedMfcbuttonConnect();
 };

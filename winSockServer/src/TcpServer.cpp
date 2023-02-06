@@ -194,7 +194,7 @@ void TcpServer::ClientFunc(const CClientItem& client, void* pMainWin)
             int iRet = recv(client.cSocket, szRev, sizeof(szRev), 0);
             if (iRet > 0)
             {
-                pMainDlg->AddInfo(std::to_string(client.cPort) + " Say:\n" + std::string(szRev));
+                pMainDlg->AddInfo(std::to_string(client.cPort) + " Say:\n" + std::string(szRev) + "\n");
             }
             else
             {
