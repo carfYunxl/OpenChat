@@ -64,6 +64,7 @@ BEGIN_MESSAGE_MAP(PCServerDlg, CDialogEx)
 	ON_WM_SIZE()
 	ON_COMMAND(ID_BUTTON_1, &OnBtn_1)
 	ON_COMMAND(ID_BUTTON_2, &OnBtn_2)
+	ON_COMMAND(ID_BUTTON_3, &OnBtn_3)
 	ON_NOTIFY_EX(TTN_NEEDTEXT,0, OnToolTipNotify)
 	ON_WM_CREATE()
 	ON_WM_TIMER()
@@ -242,6 +243,7 @@ void PCServerDlg::OnBtn_1()
 
 	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_1, FALSE);
 	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_2, TRUE);
+	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_3, TRUE);
 
 	//mToolBar.ShowWindow(SW_HIDE);
 
@@ -257,6 +259,7 @@ void PCServerDlg::OnBtn_2()
 
 	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_1, TRUE);
 	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_2, FALSE);
+	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_3, FALSE);
 }
 
 BOOL PCServerDlg::OnToolTipNotify(UINT id, NMHDR* pNMHDR, LRESULT* pResult)
@@ -314,15 +317,22 @@ void PCServerDlg::InitToolBar()
 	pPngImage->DeleteObject();
 
 	CPngImage* pPngImage2 = new CPngImage();
-
 	pPngImage2->Load(IDB_PNG_CLOSE);
 	mImageList.Add(pPngImage2, RGB(0, 0, 0));
 	pPngImage2->DeleteObject();
+
+	CPngImage* pPngImage3 = new CPngImage();
+	pPngImage3->Load(IDB_PNG_FILE);
+	mImageList.Add(pPngImage3, RGB(0, 0, 0));
+	pPngImage3->DeleteObject();
+
 	mToolBar.GetToolBarCtrl().SetImageList(&mImageList);
 	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_2, FALSE);
+	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_3, FALSE);
 	mToolBar.SetButtonStyle(1, TBBS_SEPARATOR);
 	mToolBar.SetButtonText(0, _T("Open"));
 	mToolBar.SetButtonText(2, _T("Close"));
+	mToolBar.SetButtonText(3, _T("File"));
 
 	mToolBar.ShowWindow(SW_SHOW);
 }
@@ -506,4 +516,11 @@ void PCServerDlg::PCServerDlg::SetStyle(long start, long end)
 	pf2.dyLineSpacing = 355;
 	pf2.bLineSpacingRule = 4;
 	mInfoBox.SetParaFormat(pf2);
+}
+
+void PCServerDlg::OnBtn_3()
+{
+	//打开文件
+
+	//循环读取，并发送给Client
 }

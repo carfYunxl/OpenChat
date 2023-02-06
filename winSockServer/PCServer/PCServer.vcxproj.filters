@@ -77,5 +77,8 @@
     <Image Include="res\open.png">
       <Filter>资源文件</Filter>
     </Image>
+    <Image Include="res\file.png">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>
