@@ -69,6 +69,8 @@ void TcpClient::ClientFunc(void* pMainWin)
                 int len = sizeof(connAddr);
                 getpeername(m_socket,(sockaddr*)&connAddr,&len);
                 pDlg->AddInfo(std::to_string(ntohs(connAddr.sin_port)) + " Say:\n" + std::string(msg) + "\n");
+
+                send(m_socket, msg, BUF_SIZE,0);
             }
             else
             {

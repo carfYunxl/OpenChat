@@ -54,7 +54,7 @@ PCClientDlg::~PCClientDlg()
 void PCClientDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_RICHEDIT22_SEND_BOX, mEditSend);
+	DDX_Control(pDX, IDC_EDIT_SEND_BOX, mEditSend);
 	DDX_Control(pDX, IDC_RICHEDIT21_INFO, mInfoBox);
 }
 

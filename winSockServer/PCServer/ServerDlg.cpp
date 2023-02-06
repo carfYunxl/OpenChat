@@ -520,7 +520,30 @@ void PCServerDlg::PCServerDlg::SetStyle(long start, long end)
 
 void PCServerDlg::OnBtn_3()
 {
-	//打开文件
+	CFileDialog fdlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, L"All files(*.*)|*.*|*.txt|*.TXT||");
+	fdlg.m_ofn.lpstrTitle = L"Open File";
 
-	//循环读取，并发送给Client
+	CStdioFile file;
+	CString filePath;
+	if (fdlg.DoModal() == IDOK)
+	{
+		filePath = fdlg.GetPathName();
+	}
+
+	if (file.Open(filePath, CStdioFile::modeRead))
+	{
+		CString strReadLine;
+		while (file.ReadString(strReadLine))
+		{
+			for (int i = 0; i < mClientList.GetItemCount(); ++i)
+			{
+				if (mClientList.GetCheck(i))
+				{
+					std::string str = CT2A(strReadLine.GetString());
+					SOCKET socket = _tcstoul(mClientList.GetItemText(i, 2), NULL, 10);
+					int sendbyte = send(socket, str.c_str(), str.length(), 0);
+				}
+			}
+		}
+	}
 }
