@@ -54,7 +54,7 @@ PCClientDlg::~PCClientDlg()
 void PCClientDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_EDIT_SEND_BOX, mEditSend);
+	DDX_Control(pDX, IDC_RICHEDIT21_SEND, mEditSend);
 	DDX_Control(pDX, IDC_RICHEDIT21_INFO, mInfoBox);
 }
 
@@ -92,6 +92,8 @@ BOOL PCClientDlg::OnInitDialog()
 		AfxGetMainWnd()->SendMessage(WM_CLOSE);
 	}
 #endif
+	mInfoBox.SetBackgroundColor(FALSE, RGB(192, 210, 240));
+	mEditSend.SetBackgroundColor(FALSE, RGB(152, 210, 240));
 	return TRUE;
 }
 

@@ -42,7 +42,7 @@ public:
 private:
 	ServerStatus		m_ServerStatus;
 	TcpClient*			m_Client;
-	CEdit				mEditSend;
+	CRichEditCtrl		mEditSend;
 	CRichEditCtrl		mInfoBox;
 	size_t				m_port;
 private:

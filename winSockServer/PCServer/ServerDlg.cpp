@@ -62,9 +62,11 @@ BEGIN_MESSAGE_MAP(PCServerDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_WM_SIZE()
-	ON_COMMAND(ID_BUTTON_1, &OnBtn_1)
-	ON_COMMAND(ID_BUTTON_2, &OnBtn_2)
-	ON_COMMAND(ID_BUTTON_3, &OnBtn_3)
+	ON_COMMAND(ID_BUTTON_1, &OnBtn_Open)
+	ON_COMMAND(ID_BUTTON_2, &OnBtn_Close)
+	ON_COMMAND(ID_BUTTON_3, &OnBtn_File)
+	ON_COMMAND(ID_BUTTON_4, &OnBtn_Pic)
+	ON_COMMAND(ID_BUTTON_5, &OnBtn_Video)
 	ON_NOTIFY_EX(TTN_NEEDTEXT,0, OnToolTipNotify)
 	ON_WM_CREATE()
 	ON_WM_TIMER()
@@ -91,7 +93,8 @@ BOOL PCServerDlg::OnInitDialog()
 	SetTimer(TIMER_COUNT, 1000,NULL);
 	SetTimer(TIMER_CLIENT, 1000, NULL);
 
-	mInfoBox.SetBackgroundColor(FALSE,RGB(192,210,240));
+	mInfoBox.SetBackgroundColor(FALSE, RGB(192,210,240));
+	mEditSend.SetBackgroundColor(FALSE, RGB(152, 210, 240));
 	return TRUE; 
 }
 
@@ -180,7 +183,7 @@ void PCServerDlg::InsertClient(const sockaddr_in& clientAddr, SOCKET socket)
 	CString strIp(inet_ntop(AF_INET,&clientAddr.sin_addr,szBuf,sizeof(szBuf)));
 
 	CString strSocket;
-	strSocket.Format(_T("%d"),socket);
+	strSocket.Format(_T("%ld"),socket);
 
 	mClientList.SetItemText(nRow, 0, strPort);
 	mClientList.SetItemText(nRow, 1, strIp);
@@ -234,7 +237,7 @@ BOOL PCServerDlg::PreTranslateMessage(MSG* pMsg)
 	return CDialogEx::PreTranslateMessage(pMsg);
 }
 
-void PCServerDlg::OnBtn_1()
+void PCServerDlg::OnBtn_Open()
 {
 	m_Server->SetPort(m_ServerPort);
 	m_Server->Start();
@@ -244,6 +247,8 @@ void PCServerDlg::OnBtn_1()
 	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_1, FALSE);
 	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_2, TRUE);
 	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_3, TRUE);
+	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_4, TRUE);
+	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_5, TRUE);
 
 	//mToolBar.ShowWindow(SW_HIDE);
 
@@ -252,7 +257,7 @@ void PCServerDlg::OnBtn_1()
 	//MoveControls();
 }
 
-void PCServerDlg::OnBtn_2()
+void PCServerDlg::OnBtn_Close()
 {
 	m_Server->Stop();
 	mStatusBar.SetPaneText(0, _T("[SYS] ·þÎñÆ÷ÒÑ¹Ø±Õ£¡"));
@@ -260,6 +265,8 @@ void PCServerDlg::OnBtn_2()
 	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_1, TRUE);
 	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_2, FALSE);
 	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_3, FALSE);
+	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_4, FALSE);
+	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_5, FALSE);
 }
 
 BOOL PCServerDlg::OnToolTipNotify(UINT id, NMHDR* pNMHDR, LRESULT* pResult)
@@ -316,23 +323,38 @@ void PCServerDlg::InitToolBar()
 	mImageList.Add(pPngImage, RGB(0, 0, 0));
 	pPngImage->DeleteObject();
 
-	CPngImage* pPngImage2 = new CPngImage();
-	pPngImage2->Load(IDB_PNG_CLOSE);
-	mImageList.Add(pPngImage2, RGB(0, 0, 0));
-	pPngImage2->DeleteObject();
+	pPngImage = new CPngImage();
+	pPngImage->Load(IDB_PNG_CLOSE);
+	mImageList.Add(pPngImage, RGB(0, 0, 0));
+	pPngImage->DeleteObject();
 
-	CPngImage* pPngImage3 = new CPngImage();
-	pPngImage3->Load(IDB_PNG_FILE);
-	mImageList.Add(pPngImage3, RGB(0, 0, 0));
-	pPngImage3->DeleteObject();
+	pPngImage = new CPngImage();
+	pPngImage->Load(IDB_PNG_FILE);
+	mImageList.Add(pPngImage, RGB(0, 0, 0));
+	pPngImage->DeleteObject();
+
+	pPngImage = new CPngImage();
+	pPngImage->Load(IDB_PNG_PIC);
+	mImageList.Add(pPngImage, RGB(0, 0, 0));
+	pPngImage->DeleteObject();
+
+	pPngImage = new CPngImage();
+	pPngImage->Load(IDB_PNG_VIDEO);
+	mImageList.Add(pPngImage, RGB(0, 0, 0));
+	pPngImage->DeleteObject();
 
 	mToolBar.GetToolBarCtrl().SetImageList(&mImageList);
 	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_2, FALSE);
 	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_3, FALSE);
+	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_4, FALSE);
+	mToolBar.GetToolBarCtrl().EnableButton(ID_BUTTON_5, FALSE);
 	mToolBar.SetButtonStyle(1, TBBS_SEPARATOR);
 	mToolBar.SetButtonText(0, _T("Open"));
 	mToolBar.SetButtonText(2, _T("Close"));
 	mToolBar.SetButtonText(3, _T("File"));
+	mToolBar.SetButtonText(4, _T("Picture"));
+	mToolBar.SetButtonText(5, _T("Video"));
+
 
 	mToolBar.ShowWindow(SW_SHOW);
 }
@@ -504,7 +526,7 @@ void PCServerDlg::PCServerDlg::SetStyle(long start, long end)
 	cf.dwEffects = 0;
 	cf.yHeight = 15 * 15;
 	cf.crTextColor = RGB(255, 0, 0);
-	wcscpy(cf.szFaceName,_T("Î¢ÈíÑÅºÚ"));
+	wcscpy_s(cf.szFaceName,_T("Î¢ÈíÑÅºÚ"));
 
 	mInfoBox.SetSel(start, end);
 	mInfoBox.SetSelectionCharFormat(cf);
@@ -518,7 +540,7 @@ void PCServerDlg::PCServerDlg::SetStyle(long start, long end)
 	mInfoBox.SetParaFormat(pf2);
 }
 
-void PCServerDlg::OnBtn_3()
+void PCServerDlg::OnBtn_File()
 {
 	CFileDialog fdlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, L"All files(*.*)|*.*|*.txt|*.TXT||");
 	fdlg.m_ofn.lpstrTitle = L"Open File";
@@ -539,11 +561,25 @@ void PCServerDlg::OnBtn_3()
 			{
 				if (mClientList.GetCheck(i))
 				{
-					std::string str = CT2A(strReadLine.GetString());
+					wchar_t* ptr;
+					char buf[512];
+					ptr = strReadLine.GetBuffer(strReadLine.GetLength() * sizeof(wchar_t));
+					WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)ptr, -1, buf, sizeof(buf), NULL, NULL);
+					
+					buf[511] = '\n';
 					SOCKET socket = _tcstoul(mClientList.GetItemText(i, 2), NULL, 10);
-					int sendbyte = send(socket, str.c_str(), str.length(), 0);
+					int sendbyte = send(socket, buf, 512, 0);
 				}
 			}
-		}
+		} 
 	}
+}
+
+void PCServerDlg::OnBtn_Pic()
+{
+
+}
+void PCServerDlg::OnBtn_Video()
+{
+
 }
