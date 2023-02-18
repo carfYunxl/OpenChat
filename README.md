@@ -1,3 +1,8 @@
-# socket application demo
-mainly on win32 MFC,not cross platform yet.
-this servers a personaly Tcp server class and Tcp client class to handle communication between server and client.
+## OpenChat
+A OpenChat Application build by win32 MFC and C++;
+-------------------
+mainly about:
+  - :smile: Socket programing;
+  - 😃 MFC UI Programing;
+  - ♈ File Transfer;
+  - 🥇...etc
