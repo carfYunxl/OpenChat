@@ -35,4 +35,5 @@
 /winSockServer/.vs
 
 /winSockClient/.vs
-*.git
+.git
+.gitignore.bak

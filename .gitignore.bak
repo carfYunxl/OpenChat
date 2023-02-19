@@ -35,4 +35,4 @@
 /winSockServer/.vs
 
 /winSockClient/.vs
-.git
+*.git
